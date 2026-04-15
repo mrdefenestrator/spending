@@ -1,0 +1,87 @@
+import hashlib
+from pathlib import Path
+
+from sqlalchemy import Connection, insert, select, update
+
+from spending.models import imports, transactions
+
+
+def compute_file_hash(file_path: str | Path) -> str:
+    h = hashlib.sha256()
+    with open(file_path, "rb") as f:
+        for chunk in iter(lambda: f.read(8192), b""):
+            h.update(chunk)
+    return h.hexdigest()
+
+
+def check_file_hash(conn: Connection, file_hash: str) -> bool:
+    row = conn.execute(
+        select(imports.c.id).where(imports.c.file_hash == file_hash)
+    ).fetchone()
+    return row is not None
+
+
+def create_import(
+    conn: Connection, *, account_id: int, filename: str, file_hash: str
+) -> int:
+    result = conn.execute(
+        insert(imports).values(
+            account_id=account_id, filename=filename, file_hash=file_hash
+        )
+    )
+    conn.commit()
+    return result.inserted_primary_key[0]
+
+
+def insert_transactions(
+    conn: Connection,
+    *,
+    import_id: int,
+    account_id: int,
+    transactions_data: list[dict],
+) -> None:
+    for txn in transactions_data:
+        conn.execute(
+            insert(transactions).values(
+                import_id=import_id,
+                account_id=account_id,
+                date=txn["date"],
+                amount=txn["amount"],
+                raw_description=txn["raw_description"],
+                normalized_merchant=txn["normalized_merchant"],
+                fingerprint=txn["fingerprint"],
+            )
+        )
+    conn.commit()
+
+
+def get_existing_fingerprints(conn: Connection, account_id: int) -> set[str]:
+    rows = conn.execute(
+        select(transactions.c.fingerprint).where(
+            transactions.c.account_id == account_id
+        )
+    ).fetchall()
+    return {row[0] for row in rows}
+
+
+def get_staging_imports(conn: Connection) -> list[dict]:
+    rows = conn.execute(
+        select(imports)
+        .where(imports.c.status == "staging")
+        .order_by(imports.c.imported_at.desc())
+    ).fetchall()
+    return [dict(row._mapping) for row in rows]
+
+
+def confirm_import(conn: Connection, import_id: int) -> None:
+    conn.execute(
+        update(imports).where(imports.c.id == import_id).values(status="confirmed")
+    )
+    conn.commit()
+
+
+def reject_import(conn: Connection, import_id: int) -> None:
+    conn.execute(
+        update(imports).where(imports.c.id == import_id).values(status="rejected")
+    )
+    conn.commit()
