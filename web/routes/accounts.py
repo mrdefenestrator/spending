@@ -3,6 +3,8 @@ from sqlalchemy.exc import IntegrityError
 
 from spending.repository.accounts import add_account, list_accounts
 
+VALID_ACCOUNT_TYPES = {"checking", "savings", "credit_card", "other"}
+
 bp = Blueprint("accounts", __name__)
 
 
@@ -11,6 +13,8 @@ def create():
     name = request.form.get("acct_name", "").strip()
     institution = request.form.get("acct_institution", "").strip()
     account_type = request.form.get("acct_type", "checking")
+    if account_type not in VALID_ACCOUNT_TYPES:
+        account_type = "other"
 
     engine = current_app.config["engine"]
 
