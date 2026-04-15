@@ -33,8 +33,11 @@ from spending.repository.merchants import (
     get_cached_category,
     get_uncached_merchants,
     list_merchants,
+    list_merchants_with_stats,
     set_merchant_category,
 )
+from spending.repository.corrections import apply_transaction_correction, get_correction
+from spending.repository.transactions import get_transactions
 
 __all__ = [
     "add_account",
@@ -59,9 +62,13 @@ __all__ = [
     "get_uncached_merchants",
     "list_categories",
     "list_merchants",
+    "list_merchants_with_stats",
     "seed_categories",
     "set_merchant_category",
     "get_monthly_category_totals",
     "get_monthly_totals_range",
     "get_rolling_average",
+    "get_transactions",
+    "apply_transaction_correction",
+    "get_correction",
 ]

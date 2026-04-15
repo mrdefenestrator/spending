@@ -1,0 +1,19 @@
+<tr class="bg-blue-50 border-b">
+    <td colspan="6" class="px-4 py-3">
+        <form hx-post="/transactions/{{ txn_id }}/category" hx-target="#content" hx-swap="innerHTML"
+              class="flex items-center gap-3">
+            <select name="category" class="border rounded px-2 py-1.5 text-sm">
+                {% for c in categories %}
+                <option value="{{ c }}">{{ c }}</option>
+                {% endfor %}
+            </select>
+            <label class="flex items-center gap-1 text-sm">
+                <input type="checkbox" name="apply_to_merchant">
+                Apply to all from this merchant
+            </label>
+            <button type="submit" class="bg-blue-500 text-white px-3 py-1 rounded text-sm">Save</button>
+            <button type="button" class="text-gray-500 text-sm"
+                    onclick="this.closest('tr').remove()">Cancel</button>
+        </form>
+    </td>
+</tr>

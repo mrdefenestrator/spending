@@ -59,3 +59,41 @@ def list_merchants(conn: Connection) -> list[dict]:
         select(merchant_cache).order_by(merchant_cache.c.merchant_name)
     ).fetchall()
     return [dict(row._mapping) for row in rows]
+
+
+def list_merchants_with_stats(conn: Connection) -> list[dict]:
+    """List merchants with transaction count and last seen date."""
+    from sqlalchemy import func
+    from sqlalchemy.sql.functions import coalesce
+
+    from spending.models import imports, transaction_corrections, transactions
+
+    resolved = coalesce(
+        transaction_corrections.c.merchant_name,
+        transactions.c.normalized_merchant,
+    )
+
+    stmt = (
+        select(
+            merchant_cache.c.id,
+            merchant_cache.c.merchant_name,
+            merchant_cache.c.category,
+            merchant_cache.c.source,
+            func.count(transactions.c.id).label("txn_count"),
+            func.max(transactions.c.date).label("last_seen"),
+        )
+        .outerjoin(
+            transactions,
+            resolved == merchant_cache.c.merchant_name,
+        )
+        .outerjoin(
+            transaction_corrections,
+            transactions.c.id == transaction_corrections.c.transaction_id,
+        )
+        .outerjoin(imports, transactions.c.import_id == imports.c.id)
+        .where((imports.c.status == "confirmed") | (imports.c.id.is_(None)))
+        .group_by(merchant_cache.c.id)
+        .order_by(merchant_cache.c.merchant_name)
+    )
+    rows = conn.execute(stmt).fetchall()
+    return [dict(row._mapping) for row in rows]

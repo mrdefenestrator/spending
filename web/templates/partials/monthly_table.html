@@ -1,0 +1,47 @@
+<table class="w-full bg-white rounded-lg shadow-sm">
+    <thead>
+        <tr class="border-b text-left text-sm text-gray-500">
+            <th class="px-4 py-3">Category</th>
+            <th class="px-4 py-3 text-right">Count</th>
+            <th class="px-4 py-3 text-right">Total</th>
+            <th class="px-4 py-3 text-right">3-Mo Avg</th>
+            <th class="px-4 py-3 text-center">vs Avg</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for row in totals %}
+        <tr class="border-b hover:bg-blue-50 cursor-pointer"
+            hx-get="/monthly/drilldown/{{ row.category }}?year={{ year }}&month={{ month }}"
+            hx-target="#drilldown-{{ loop.index }}"
+            hx-swap="innerHTML">
+            <td class="px-4 py-3 font-medium">{{ row.category }}</td>
+            <td class="px-4 py-3 text-right text-sm">{{ row.count }}</td>
+            <td class="px-4 py-3 text-right">${{ "%.2f"|format(row.total|abs) }}</td>
+            <td class="px-4 py-3 text-right text-sm text-gray-500">
+                {% if row.average %}${{ "%.2f"|format(row.average|abs) }}{% else %}&mdash;{% endif %}
+            </td>
+            <td class="px-4 py-3 text-center text-sm">
+                {% if row.average %}
+                    {% if row.total|abs > row.average|abs %}
+                    <span class="text-red-500">&uarr;</span>
+                    {% elif row.total|abs < row.average|abs %}
+                    <span class="text-green-500">&darr;</span>
+                    {% else %}
+                    <span class="text-gray-400">=</span>
+                    {% endif %}
+                {% endif %}
+            </td>
+        </tr>
+        <tr id="drilldown-{{ loop.index }}"></tr>
+        {% endfor %}
+    </tbody>
+    <tfoot>
+        <tr class="font-semibold">
+            <td class="px-4 py-3">Total</td>
+            <td></td>
+            <td class="px-4 py-3 text-right">${{ "%.2f"|format(grand_total|abs) }}</td>
+            <td></td>
+            <td></td>
+        </tr>
+    </tfoot>
+</table>

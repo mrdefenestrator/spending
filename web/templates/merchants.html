@@ -1,5 +1,23 @@
 {% extends "base.html" %}
 {% block content %}
-<h2 class="text-lg font-semibold mb-4">Merchants</h2>
-<p class="text-gray-500">Coming soon...</p>
+<div class="mb-4 flex flex-wrap gap-2 items-end">
+    <input type="search" name="search" value="{{ search }}" placeholder="Search merchants..."
+           hx-get="/merchants" hx-target="#content" hx-include="[name]"
+           hx-trigger="keyup changed delay:300ms"
+           class="border rounded px-2 py-1.5 text-sm">
+    <select name="category" hx-get="/merchants" hx-target="#content" hx-include="[name]"
+            class="border rounded px-2 py-1.5 text-sm">
+        <option value="">All Categories</option>
+        {% for c in categories %}
+        <option value="{{ c }}" {{ 'selected' if selected_category == c }}>{{ c }}</option>
+        {% endfor %}
+    </select>
+    <select name="source" hx-get="/merchants" hx-target="#content" hx-include="[name]"
+            class="border rounded px-2 py-1.5 text-sm">
+        <option value="">All Sources</option>
+        <option value="api" {{ 'selected' if selected_source == 'api' }}>API</option>
+        <option value="manual" {{ 'selected' if selected_source == 'manual' }}>Manual</option>
+    </select>
+</div>
+{% include "partials/merchant_rows.html" %}
 {% endblock %}

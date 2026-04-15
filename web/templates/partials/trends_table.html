@@ -1,0 +1,29 @@
+{% from "partials/sparkline.svg" import sparkline %}
+<table class="w-full bg-white rounded-lg shadow-sm">
+    <thead>
+        <tr class="border-b text-left text-sm text-gray-500">
+            <th class="px-4 py-3">Category</th>
+            <th class="px-4 py-3 text-right">Total</th>
+            <th class="px-4 py-3 text-right">Monthly Avg</th>
+            <th class="px-4 py-3 text-center">Trend</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for row in trends %}
+        <tr class="border-b">
+            <td class="px-4 py-3 font-medium">{{ row.category }}</td>
+            <td class="px-4 py-3 text-right">${{ "%.2f"|format(row.total|abs) }}</td>
+            <td class="px-4 py-3 text-right text-sm text-gray-500">${{ "%.2f"|format(row.monthly_avg|abs) }}</td>
+            <td class="px-4 py-3 text-center">{{ sparkline(row.sparkline_values) }}</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+    <tfoot>
+        <tr class="font-semibold">
+            <td class="px-4 py-3">Total</td>
+            <td class="px-4 py-3 text-right">${{ "%.2f"|format(grand_total|abs) }}</td>
+            <td></td>
+            <td></td>
+        </tr>
+    </tfoot>
+</table>
