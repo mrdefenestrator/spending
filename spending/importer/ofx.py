@@ -9,8 +9,8 @@ _ACCOUNT_TYPE_MAP = {
     "CHECKING": "checking",
     "SAVINGS": "savings",
     "MONEYMRKT": "savings",
-    "CREDITLINE": "credit",
-    "CREDITCARD": "credit",
+    "CREDITLINE": "credit_card",
+    "CREDITCARD": "credit_card",
 }
 
 

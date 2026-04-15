@@ -15,9 +15,8 @@ def create():
     engine = current_app.config["engine"]
 
     with engine.connect() as conn:
-        accounts = list_accounts(conn)
-
         if not name or not institution:
+            accounts = list_accounts(conn)
             return render_template(
                 "partials/account_panel.html",
                 accounts=accounts,
@@ -31,8 +30,8 @@ def create():
             new_id = add_account(
                 conn, name=name, institution=institution, account_type=account_type
             )
-            accounts = list_accounts(conn)
         except IntegrityError:
+            accounts = list_accounts(conn)
             return render_template(
                 "partials/account_panel.html",
                 accounts=accounts,
@@ -42,11 +41,12 @@ def create():
                 error=f'Account "{name}" already exists.',
             )
 
-    return render_template(
-        "partials/account_panel.html",
-        accounts=accounts,
-        meta=None,
-        selected_account_id=new_id,
-        show_create=False,
-        error=None,
-    )
+        accounts = list_accounts(conn)
+        return render_template(
+            "partials/account_panel.html",
+            accounts=accounts,
+            meta=None,
+            selected_account_id=new_id,
+            show_create=False,
+            error=None,
+        )
