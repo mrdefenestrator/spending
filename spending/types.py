@@ -15,6 +15,6 @@ class ImportResult(TypedDict):
 
 
 class AccountMeta(TypedDict):
-    institution: str       # e.g. "Chase" (empty string if unavailable)
-    account_type: str      # "checking" | "savings" | "credit" | "other"
-    suggested_name: str    # e.g. "Chase Checking ...7890"
+    institution: str  # e.g. "Chase" (empty string if unavailable)
+    account_type: str  # "checking" | "savings" | "credit" | "other"
+    suggested_name: str  # e.g. "Chase Checking ...7890"
