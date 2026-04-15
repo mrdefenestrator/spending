@@ -65,7 +65,7 @@ def list_merchants_with_stats(conn: Connection) -> list[dict]:
     """List merchants with transaction count and last seen date."""
     from sqlalchemy import func
 
-    from spending.models import imports, transactions
+    from spending.models import imports, transaction_corrections, transactions
 
     stmt = (
         select(
@@ -80,6 +80,10 @@ def list_merchants_with_stats(conn: Connection) -> list[dict]:
         .outerjoin(
             transactions,
             transactions.c.normalized_merchant == merchant_cache.c.merchant_name,
+        )
+        .outerjoin(
+            transaction_corrections,
+            transactions.c.id == transaction_corrections.c.transaction_id,
         )
         .outerjoin(imports, transactions.c.import_id == imports.c.id)
         .where((imports.c.status == "confirmed") | (imports.c.id.is_(None)))

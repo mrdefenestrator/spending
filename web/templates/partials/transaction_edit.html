@@ -1,4 +1,4 @@
-<tr class="bg-blue-50 border-b">
+<tr id="edit-{{ txn_id }}" class="bg-blue-50 border-b">
     <td colspan="6" class="px-4 py-3">
         <form hx-post="/transactions/{{ txn_id }}/category" hx-target="#content" hx-swap="innerHTML"
               class="flex items-center gap-3">

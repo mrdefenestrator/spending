@@ -1,3 +1,4 @@
+import os
 import tempfile
 from pathlib import Path
 
@@ -5,6 +6,7 @@ from flask import Blueprint, current_app, render_template, request
 
 from spending.classifier import classify_merchants
 from spending.importer import run_import
+from spending.importer.ofx import extract_ofx_metadata
 from spending.repository.accounts import list_accounts
 from spending.repository.categories import get_category_names
 from spending.repository.imports import (
@@ -89,6 +91,36 @@ def upload():
         staging=staging,
         accounts=accounts,
         results=results,
+    )
+
+
+@bp.route("/import/detect-account", methods=["POST"])
+def detect_account():
+    file = request.files.get("files")
+    meta = None
+
+    if file and file.filename:
+        suffix = Path(file.filename).suffix.lower()
+        if suffix in (".ofx", ".qfx"):
+            with tempfile.NamedTemporaryFile(delete=False, suffix=suffix) as tmp:
+                tmp_path = tmp.name
+                file.save(tmp_path)
+            try:
+                meta = extract_ofx_metadata(tmp_path)
+            finally:
+                os.unlink(tmp_path)
+
+    engine = current_app.config["engine"]
+    with engine.connect() as conn:
+        accounts = list_accounts(conn)
+
+    return render_template(
+        "partials/account_panel.html",
+        accounts=accounts,
+        meta=meta,
+        selected_account_id=None,
+        show_create=(len(accounts) == 0),
+        error=None,
     )
 
 

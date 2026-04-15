@@ -13,15 +13,9 @@
                 <p class="text-sm text-gray-400 mt-1">Supports OFX, QFX, CSV</p>
                 <div id="file-list" class="mt-3 text-sm text-gray-700"></div>
             </div>
-            <div>
-                <label class="block text-sm font-medium text-gray-700 mb-1">Account</label>
-                <select name="account_id" required class="border rounded px-3 py-2 w-full text-sm">
-                    <option value="">Select account...</option>
-                    {% for a in accounts %}
-                    <option value="{{ a.id }}">{{ a.name }}</option>
-                    {% endfor %}
-                </select>
-            </div>
+            {% with meta=none, selected_account_id=none, show_create=(accounts|length == 0), error=none %}
+            {% include "partials/account_panel.html" %}
+            {% endwith %}
             <button type="submit" class="bg-blue-500 text-white px-4 py-2 rounded text-sm hover:bg-blue-600">
                 Import
             </button>

@@ -30,6 +30,7 @@ include = ["spending*"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
+pythonpath = ["."]
 markers = [
     "e2e: end-to-end browser tests (deselect with '-m not e2e')",
 ]

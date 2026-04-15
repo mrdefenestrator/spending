@@ -17,6 +17,8 @@
             <td class="px-4 py-3 text-sm">{{ txn.merchant }}</td>
             <td class="px-4 py-3 text-sm text-gray-500">{{ txn.raw_description }}</td>
             <td class="px-4 py-3 text-sm cursor-pointer text-blue-600 hover:underline"
+                onclick="(function(){ var edit=document.getElementById('edit-{{ txn.id }}'); if(edit){ edit.remove(); } })()"
+                hx-trigger="click[!document.getElementById('edit-{{ txn.id }}')]"
                 hx-get="/transactions/{{ txn.id }}/edit-category"
                 hx-target="closest tr"
                 hx-swap="afterend">
