@@ -2,8 +2,9 @@ import hashlib
 from pathlib import Path
 
 from sqlalchemy import Connection, insert, select, update
+from sqlalchemy.sql.functions import coalesce
 
-from spending.models import imports, transactions
+from spending.models import imports, merchant_cache, transactions
 
 
 def compute_file_hash(file_path: str | Path) -> str:
@@ -62,6 +63,29 @@ def get_existing_fingerprints(conn: Connection, account_id: int) -> set[str]:
         )
     ).fetchall()
     return {row[0] for row in rows}
+
+
+def get_staging_transactions(conn: Connection, import_id: int) -> list[dict]:
+    """Get transactions for a staging import, resolving merchant/category without confirmed filter."""
+    stmt = (
+        select(
+            transactions.c.id,
+            transactions.c.date,
+            transactions.c.amount,
+            transactions.c.raw_description,
+            transactions.c.normalized_merchant.label("merchant"),
+            coalesce(merchant_cache.c.category, "Uncategorized").label("category"),
+        )
+        .select_from(transactions)
+        .outerjoin(
+            merchant_cache,
+            transactions.c.normalized_merchant == merchant_cache.c.merchant_name,
+        )
+        .where(transactions.c.import_id == import_id)
+        .order_by(transactions.c.date.desc())
+    )
+    rows = conn.execute(stmt).fetchall()
+    return [dict(row._mapping) for row in rows]
 
 
 def get_staging_imports(conn: Connection) -> list[dict]:

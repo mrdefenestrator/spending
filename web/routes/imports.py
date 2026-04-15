@@ -12,10 +12,10 @@ from spending.repository.categories import get_category_names
 from spending.repository.imports import (
     confirm_import,
     get_staging_imports,
+    get_staging_transactions,
     reject_import,
 )
 from spending.repository.merchants import get_uncached_merchants, set_merchant_category
-from spending.repository.transactions import get_transactions
 
 bp = Blueprint("imports", __name__)
 
@@ -128,7 +128,7 @@ def detect_account():
 def review(import_id):
     engine = current_app.config["engine"]
     with engine.connect() as conn:
-        txns = get_transactions(conn, import_id=import_id)
+        txns = get_staging_transactions(conn, import_id)
     return render_template(
         "partials/import_batch.html", transactions=txns, import_id=import_id
     )
