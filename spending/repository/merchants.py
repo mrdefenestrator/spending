@@ -64,14 +64,8 @@ def list_merchants(conn: Connection) -> list[dict]:
 def list_merchants_with_stats(conn: Connection) -> list[dict]:
     """List merchants with transaction count and last seen date."""
     from sqlalchemy import func
-    from sqlalchemy.sql.functions import coalesce
 
-    from spending.models import imports, transaction_corrections, transactions
-
-    resolved = coalesce(
-        transaction_corrections.c.merchant_name,
-        transactions.c.normalized_merchant,
-    )
+    from spending.models import imports, transactions
 
     stmt = (
         select(
@@ -82,13 +76,10 @@ def list_merchants_with_stats(conn: Connection) -> list[dict]:
             func.count(transactions.c.id).label("txn_count"),
             func.max(transactions.c.date).label("last_seen"),
         )
+        .select_from(merchant_cache)
         .outerjoin(
             transactions,
-            resolved == merchant_cache.c.merchant_name,
-        )
-        .outerjoin(
-            transaction_corrections,
-            transactions.c.id == transaction_corrections.c.transaction_id,
+            transactions.c.normalized_merchant == merchant_cache.c.merchant_name,
         )
         .outerjoin(imports, transactions.c.import_id == imports.c.id)
         .where((imports.c.status == "confirmed") | (imports.c.id.is_(None)))

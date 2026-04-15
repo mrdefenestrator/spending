@@ -8,7 +8,8 @@ from spending.models import metadata
 def engine():
     engine = create_engine("sqlite:///:memory:")
     metadata.create_all(engine)
-    return engine
+    yield engine
+    engine.dispose()
 
 
 @pytest.fixture
