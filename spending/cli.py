@@ -1,21 +1,31 @@
+from datetime import date as date_type
+from pathlib import Path
+
 import click
 from sqlalchemy import create_engine
 
+from spending.classifier import classify_merchants
+from spending.importer import run_import
 from spending.models import metadata
 from spending.repository.accounts import (
     add_account,
     delete_account,
     edit_account,
     get_account_by_id,
+    get_account_by_name,
     list_accounts,
 )
+from spending.repository.aggregations import get_monthly_category_totals
 from spending.repository.categories import (
     add_category,
     delete_category,
     edit_category,
+    get_category_names,
     list_categories,
     seed_categories,
 )
+from spending.repository.imports import get_staging_imports
+from spending.repository.merchants import get_uncached_merchants, set_merchant_category
 
 
 @click.group()
@@ -147,3 +157,107 @@ def categories_delete(ctx, name):
     with ctx.obj["engine"].connect() as conn:
         delete_category(conn, name=name)
     click.echo(f"Deleted category: {name}")
+
+
+@cli.command("import")
+@click.argument("files", nargs=-1, required=True, type=click.Path(exists=True))
+@click.option("--account", help="Account name to import into")
+@click.pass_context
+def import_cmd(ctx, files, account):
+    """Import statement files."""
+    engine = ctx.obj["engine"]
+
+    # Expand directories
+    file_paths = []
+    for f in files:
+        p = Path(f)
+        if p.is_dir():
+            file_paths.extend(p.glob("*.ofx"))
+            file_paths.extend(p.glob("*.qfx"))
+            file_paths.extend(p.glob("*.csv"))
+        else:
+            file_paths.append(p)
+
+    if not file_paths:
+        click.echo("No supported files found.")
+        return
+
+    with engine.connect() as conn:
+        if account:
+            acct = get_account_by_name(conn, account)
+            if not acct:
+                click.echo(f"Account not found: {account}")
+                return
+            account_id = acct["id"]
+        else:
+            click.echo("--account is required (auto-detection not yet implemented)")
+            return
+
+        all_new_merchants = set()
+        for fp in file_paths:
+            click.echo(f"Importing {fp.name}...")
+            result = run_import(conn, fp, account_id)
+
+            if result.get("error"):
+                click.echo(f"  Error: {result['error']}")
+                continue
+
+            click.echo(
+                f"  {result['new_count']} new, "
+                f"{result['skipped_count']} skipped, "
+                f"{result['flagged_count']} flagged"
+            )
+            all_new_merchants.update(result["new_merchants"])
+
+        # Classify new merchants
+        if all_new_merchants:
+            uncached = get_uncached_merchants(conn, list(all_new_merchants))
+            if uncached:
+                click.echo(f"Classifying {len(uncached)} new merchants...")
+                category_names = get_category_names(conn)
+                classifications = classify_merchants(uncached, category_names)
+                for name, category in classifications.items():
+                    set_merchant_category(conn, name, category, source="api")
+                unclassified = len(uncached) - len(classifications)
+                if unclassified:
+                    click.echo(f"  {unclassified} merchants could not be classified")
+
+        click.echo("Done. Review staged imports in the web UI.")
+
+
+@cli.command()
+@click.pass_context
+def status(ctx):
+    """Show current month spending summary."""
+    engine = ctx.obj["engine"]
+    today = date_type.today()
+
+    with engine.connect() as conn:
+        totals = get_monthly_category_totals(conn, year=today.year, month=today.month)
+        staging = get_staging_imports(conn)
+
+    if not totals:
+        click.echo(f"No spending data for {today.strftime('%B %Y')}.")
+    else:
+        grand_total = sum(row["total"] for row in totals)
+        click.echo(f"\n{today.strftime('%B %Y')} Spending: ${abs(grand_total):,.2f}")
+        click.echo("-" * 40)
+        for row in totals[:5]:
+            click.echo(
+                f"  {row['category']:20s} ${abs(row['total']):>10,.2f}  ({row['count']} txns)"
+            )
+        if len(totals) > 5:
+            click.echo(f"  ... and {len(totals) - 5} more categories")
+
+    if staging:
+        click.echo(f"\n{len(staging)} pending import(s) awaiting review.")
+
+
+@cli.command()
+@click.option("--port", default=5002, type=int)
+def serve(port):
+    """Start the web server."""
+    from web.app import create_app
+
+    app = create_app()
+    app.run(debug=True, port=port)

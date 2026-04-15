@@ -1,3 +1,8 @@
+from spending.repository.aggregations import (
+    get_monthly_category_totals,
+    get_monthly_totals_range,
+    get_rolling_average,
+)
 from spending.repository.accounts import (
     add_account,
     delete_account,
@@ -56,4 +61,7 @@ __all__ = [
     "list_merchants",
     "seed_categories",
     "set_merchant_category",
+    "get_monthly_category_totals",
+    "get_monthly_totals_range",
+    "get_rolling_average",
 ]
