@@ -1,0 +1,34 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="mb-4 flex flex-wrap gap-2 items-end">
+    <select name="account_id" hx-get="/transactions" hx-target="#content" hx-include="[name]"
+            class="border rounded px-2 py-1.5 text-sm">
+        <option value="">All Accounts</option>
+        {% for a in accounts %}
+        <option value="{{ a.id }}" {{ 'selected' if selected_account == a.id }}>{{ a.name }}</option>
+        {% endfor %}
+    </select>
+    <select name="category" hx-get="/transactions" hx-target="#content" hx-include="[name]"
+            class="border rounded px-2 py-1.5 text-sm">
+        <option value="">All Categories</option>
+        {% for c in categories %}
+        <option value="{{ c }}" {{ 'selected' if selected_category == c }}>{{ c }}</option>
+        {% endfor %}
+    </select>
+    <select name="status" hx-get="/transactions" hx-target="#content" hx-include="[name]"
+            class="border rounded px-2 py-1.5 text-sm">
+        <option value="">All Status</option>
+        <option value="categorized" {{ 'selected' if selected_status == 'categorized' }}>Categorized</option>
+        <option value="uncategorized" {{ 'selected' if selected_status == 'uncategorized' }}>Uncategorized</option>
+        <option value="corrected" {{ 'selected' if selected_status == 'corrected' }}>Corrected</option>
+    </select>
+    <input type="search" name="search" value="{{ search }}" placeholder="Search..."
+           hx-get="/transactions" hx-target="#content" hx-include="[name]"
+           hx-trigger="keyup changed delay:300ms"
+           class="border rounded px-2 py-1.5 text-sm">
+    <input type="hidden" name="year" value="{{ year }}">
+    <input type="hidden" name="month" value="{{ month }}">
+</div>
+
+{% include "partials/transaction_rows.html" %}
+{% endblock %}

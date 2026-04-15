@@ -1,0 +1,29 @@
+<table class="w-full bg-white rounded-lg shadow-sm">
+    <thead>
+        <tr class="border-b text-left text-sm text-gray-500">
+            <th class="px-4 py-3 w-8"><input type="checkbox" id="select-all"></th>
+            <th class="px-4 py-3">Date</th>
+            <th class="px-4 py-3">Merchant</th>
+            <th class="px-4 py-3">Description</th>
+            <th class="px-4 py-3">Category</th>
+            <th class="px-4 py-3 text-right">Amount</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for txn in transactions %}
+        <tr class="border-b hover:bg-gray-50">
+            <td class="px-4 py-3"><input type="checkbox" name="txn_ids" value="{{ txn.id }}"></td>
+            <td class="px-4 py-3 text-sm">{{ txn.date }}</td>
+            <td class="px-4 py-3 text-sm">{{ txn.merchant }}</td>
+            <td class="px-4 py-3 text-sm text-gray-500">{{ txn.raw_description }}</td>
+            <td class="px-4 py-3 text-sm cursor-pointer text-blue-600 hover:underline"
+                hx-get="/transactions/{{ txn.id }}/edit-category"
+                hx-target="closest tr"
+                hx-swap="afterend">
+                {{ txn.category }}
+            </td>
+            <td class="px-4 py-3 text-right">${{ "%.2f"|format(txn.amount|abs) }}</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>

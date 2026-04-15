@@ -1,0 +1,22 @@
+prefixes:
+  - "SQ *"
+  - "SQ*"
+  - "TST *"
+  - "TST*"
+  - "PAYPAL *"
+  - "PAYPAL*"
+  - "CKE *"
+  - "SP *"
+  - "SP*"
+  - "APL*"
+  - "GOOGLE *"
+
+trailing_patterns:
+  # City, State with comma: "CHICAGO, IL" or "CHICAGO, IL 60601"
+  - "\\s+[A-Z]+,\\s*[A-Z]{2}\\s*\\d{0,5}$"
+  # State + ZIP without comma: " NY 10001"
+  - "\\s+[A-Z]{2}\\s+\\d{5}$"
+  # Reference numbers: 3+ digits optionally preceded by # or *
+  - "\\s*[#*]?\\d{3,}$"
+  # Alphanumeric transaction IDs: must contain at least one digit or special char
+  - "\\s+[A-Z0-9*]*[0-9*][A-Z0-9*]{3,}$"

@@ -1,0 +1,13 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="flex items-center gap-2 mb-6">
+    {% for p, label in [("quarterly", "Quarterly"), ("ytd", "Year to Date"), ("trailing12", "Trailing 12 Mo"), ("annual", "Last Year")] %}
+    <a href="/trends?period={{ p }}"
+       hx-get="/trends?period={{ p }}" hx-target="#content" hx-push-url="true"
+       class="px-3 py-1.5 text-sm rounded {{ 'bg-blue-500 text-white' if period == p else 'bg-gray-100 text-gray-700 hover:bg-gray-200' }}">
+        {{ label }}
+    </a>
+    {% endfor %}
+</div>
+{% include "partials/trends_table.html" %}
+{% endblock %}
