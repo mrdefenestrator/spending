@@ -37,6 +37,7 @@ def cli(ctx, db):
     engine = create_engine(f"sqlite:///{db}")
     metadata.create_all(engine)
     ctx.obj["engine"] = engine
+    ctx.call_on_close(engine.dispose)
     with engine.connect() as conn:
         seed_categories(conn, "configs/categories.yaml")
 

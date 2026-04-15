@@ -25,8 +25,13 @@ def index():
         staging = get_staging_imports(conn)
         accounts = list_accounts(conn)
 
+    template = (
+        "partials/import_content.html"
+        if request.headers.get("HX-Request")
+        else "import.html"
+    )
     return render_template(
-        "import.html",
+        template,
         active_tab="import",
         staging=staging,
         accounts=accounts,
@@ -73,8 +78,13 @@ def upload():
         staging = get_staging_imports(conn)
         accounts = list_accounts(conn)
 
+    template = (
+        "partials/import_content.html"
+        if request.headers.get("HX-Request")
+        else "import.html"
+    )
     return render_template(
-        "import.html",
+        template,
         active_tab="import",
         staging=staging,
         accounts=accounts,
@@ -97,7 +107,14 @@ def confirm(import_id):
     engine = current_app.config["engine"]
     with engine.connect() as conn:
         confirm_import(conn, import_id)
-    return "", 200, {"HX-Trigger": "refreshImports"}
+        staging = get_staging_imports(conn)
+        accounts = list_accounts(conn)
+    return render_template(
+        "partials/import_content.html",
+        active_tab="import",
+        staging=staging,
+        accounts=accounts,
+    )
 
 
 @bp.route("/import/<int:import_id>/reject", methods=["POST"])
@@ -105,4 +122,11 @@ def do_reject(import_id):
     engine = current_app.config["engine"]
     with engine.connect() as conn:
         reject_import(conn, import_id)
-    return "", 200, {"HX-Trigger": "refreshImports"}
+        staging = get_staging_imports(conn)
+        accounts = list_accounts(conn)
+    return render_template(
+        "partials/import_content.html",
+        active_tab="import",
+        staging=staging,
+        accounts=accounts,
+    )
