@@ -87,9 +87,8 @@ def update_category(txn_id):
         else:
             apply_transaction_correction(conn, txn_id, category=category)
 
-    return render_template(
-        "partials/transaction_rows.html", transactions=[], refresh=True
-    )
+    current_url = request.headers.get("HX-Current-URL", "/transactions")
+    return "", 204, {"HX-Redirect": current_url}
 
 
 @bp.route("/transactions/bulk-categorize", methods=["POST"])
