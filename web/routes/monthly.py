@@ -27,7 +27,8 @@ def index():
     for row in totals:
         row["average"] = averages.get(row["category"])
 
-    grand_total = sum(row["total"] for row in totals) if totals else 0
+    excluded = {"Transfer", "Income"}
+    grand_total = sum(row["total"] for row in totals if row["category"] not in excluded)
 
     template = (
         "partials/monthly_table.html"

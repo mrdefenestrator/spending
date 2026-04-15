@@ -35,8 +35,13 @@ def index():
         accounts = list_accounts(conn)
         categories = get_category_names(conn)
 
+    prev_month = month - 1 if month > 1 else 12
+    prev_year = year if month > 1 else year - 1
+    next_month = month + 1 if month < 12 else 1
+    next_year = year if month < 12 else year + 1
+
     template = (
-        "partials/transaction_rows.html"
+        "partials/transactions_content.html"
         if request.headers.get("HX-Request")
         else "transactions.html"
     )
@@ -48,6 +53,10 @@ def index():
         categories=categories,
         year=year,
         month=month,
+        prev_year=prev_year,
+        prev_month=prev_month,
+        next_year=next_year,
+        next_month=next_month,
         selected_category=category,
         selected_account=account_id,
         search=search or "",

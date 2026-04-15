@@ -61,7 +61,8 @@ def index():
             }
         )
 
-    grand_total = sum(t["total"] for t in trends)
+    excluded = {"Transfer", "Income"}
+    grand_total = sum(t["total"] for t in trends if t["category"] not in excluded)
 
     template = (
         "partials/trends_table.html"
