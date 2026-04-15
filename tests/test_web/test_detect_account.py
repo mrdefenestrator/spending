@@ -49,7 +49,9 @@ def test_detect_account_ofx_prefills_institution(client, ofx_with_meta_bytes):
     assert "Chase" in html
 
 
-def test_detect_account_ofx_no_accounts_shows_expanded_form(client, ofx_with_meta_bytes):
+def test_detect_account_ofx_no_accounts_shows_expanded_form(
+    client, ofx_with_meta_bytes
+):
     response = client.post(
         "/import/detect-account",
         data={"files": (io.BytesIO(ofx_with_meta_bytes), "test.ofx")},

@@ -1,3 +1,4 @@
+import os
 import tempfile
 from pathlib import Path
 
@@ -102,8 +103,12 @@ def detect_account():
         suffix = Path(file.filename).suffix.lower()
         if suffix in (".ofx", ".qfx"):
             with tempfile.NamedTemporaryFile(delete=False, suffix=suffix) as tmp:
-                file.save(tmp.name)
-                meta = extract_ofx_metadata(tmp.name)
+                tmp_path = tmp.name
+                file.save(tmp_path)
+            try:
+                meta = extract_ofx_metadata(tmp_path)
+            finally:
+                os.unlink(tmp_path)
 
     engine = current_app.config["engine"]
     with engine.connect() as conn:

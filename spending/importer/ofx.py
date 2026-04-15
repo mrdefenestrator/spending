@@ -13,6 +13,12 @@ _ACCOUNT_TYPE_MAP = {
     "CREDITCARD": "credit_card",
 }
 
+_ACCOUNT_TYPE_DISPLAY = {
+    "checking": "Checking",
+    "savings": "Savings",
+    "credit_card": "Credit Card",
+}
+
 
 def parse_ofx(file_path: str | Path) -> ImportResult:
     with open(file_path, "rb") as f:
@@ -60,8 +66,9 @@ def extract_ofx_metadata(file_path: str | Path) -> AccountMeta | None:
         parts = []
         if institution:
             parts.append(institution)
-        if account_type and account_type != "other":
-            parts.append(account_type.capitalize())
+        display = _ACCOUNT_TYPE_DISPLAY.get(account_type)
+        if display:
+            parts.append(display)
         if last4:
             parts.append(f"...{last4}")
         suggested_name = " ".join(parts) if parts else "New Account"
