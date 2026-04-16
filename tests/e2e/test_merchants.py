@@ -91,7 +91,7 @@ def test_merchants_appear_after_transaction_correction(page, confirmed_server):
     # Step 4: save and wait for the page to reload via HX-Redirect
     with page.expect_response(lambda r: r.status == 204):
         edit_row.locator("button[type='submit']").click()
-    page.wait_for_url(f"**/transactions**")
+    page.wait_for_url("**/transactions**")
 
     # Step 5: merchants tab now has one entry
     page.goto(f"{confirmed_server}/merchants")
