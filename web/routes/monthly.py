@@ -30,8 +30,13 @@ def index():
     excluded = {"Transfer", "Income"}
     grand_total = sum(row["total"] for row in totals if row["category"] not in excluded)
 
+    prev_month = month - 1 if month > 1 else 12
+    prev_year = year if month > 1 else year - 1
+    next_month = month + 1 if month < 12 else 1
+    next_year = year if month < 12 else year + 1
+
     template = (
-        "partials/monthly_table.html"
+        "partials/monthly_content.html"
         if request.headers.get("HX-Request")
         else "monthly.html"
     )
@@ -42,6 +47,10 @@ def index():
         grand_total=grand_total,
         year=year,
         month=month,
+        prev_year=prev_year,
+        prev_month=prev_month,
+        next_year=next_year,
+        next_month=next_month,
     )
 
 

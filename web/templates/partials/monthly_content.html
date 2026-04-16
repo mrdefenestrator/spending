@@ -1,0 +1,17 @@
+<div class="flex items-center justify-between mb-6">
+    <h2 class="text-lg font-semibold">Monthly Summary</h2>
+    <div class="flex items-center space-x-2">
+        <a href="/monthly?year={{ prev_year }}&month={{ prev_month }}"
+           hx-get="/monthly?year={{ prev_year }}&month={{ prev_month }}"
+           hx-target="#content" hx-push-url="true"
+           class="px-2 py-1 text-gray-600 hover:bg-gray-100 rounded">&larr;</a>
+        <span class="text-sm font-medium text-gray-700">
+            {{ '%02d/%d' | format(month, year) }}
+        </span>
+        <a href="/monthly?year={{ next_year }}&month={{ next_month }}"
+           hx-get="/monthly?year={{ next_year }}&month={{ next_month }}"
+           hx-target="#content" hx-push-url="true"
+           class="px-2 py-1 text-gray-600 hover:bg-gray-100 rounded">&rarr;</a>
+    </div>
+</div>
+{% include "partials/monthly_table.html" %}
