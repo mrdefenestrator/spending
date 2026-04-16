@@ -1,0 +1,31 @@
+{% set type_labels = {"checking": "Checking", "savings": "Savings", "credit_card": "Credit Card", "other": "Other"} %}
+<h2 class="text-lg font-semibold mb-4">Accounts</h2>
+{% if accounts %}
+<table class="w-full bg-white rounded-lg shadow-sm">
+    <thead>
+        <tr class="border-b text-left text-sm text-gray-500">
+            <th class="px-4 py-3">Name</th>
+            <th class="px-4 py-3">Institution</th>
+            <th class="px-4 py-3">Type</th>
+            <th class="px-4 py-3 text-gray-400 text-xs font-normal">Created</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for a in accounts %}
+        <tr id="account-row-{{ a.id }}" class="border-b hover:bg-gray-50">
+            <td class="px-4 py-3 font-medium text-sm cursor-pointer text-blue-600 hover:underline"
+                hx-get="/accounts/{{ a.id }}/edit"
+                hx-target="#account-row-{{ a.id }}"
+                hx-swap="outerHTML">
+                {{ a.name }}
+            </td>
+            <td class="px-4 py-3 text-sm">{{ a.institution }}</td>
+            <td class="px-4 py-3 text-sm text-gray-500">{{ type_labels.get(a.account_type, a.account_type) }}</td>
+            <td class="px-4 py-3 text-xs text-gray-400">{{ a.created_at.strftime('%Y-%m-%d') if a.created_at else '—' }}</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% else %}
+<p class="text-gray-500 text-sm">No accounts yet. Create one on the Import tab.</p>
+{% endif %}

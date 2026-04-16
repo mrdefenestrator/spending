@@ -13,7 +13,9 @@
             <td class="py-1">{{ txn.date }}</td>
             <td class="py-1">{{ txn.merchant }}</td>
             <td class="py-1 text-gray-500">{{ txn.category }}</td>
-            <td class="py-1 text-right">${{ "%.2f"|format(txn.amount|abs) }}</td>
+            <td class="py-1 text-right {{ 'text-red-600' if txn.amount < 0 else 'text-green-600' }}">
+                {{ '-$' if txn.amount < 0 else '+$' }}{{ "%.2f"|format(txn.amount|abs) }}
+            </td>
         </tr>
         {% endfor %}
     </tbody>

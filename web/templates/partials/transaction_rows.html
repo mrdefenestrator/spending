@@ -5,6 +5,7 @@
             <th class="px-4 py-3">Date</th>
             <th class="px-4 py-3">Merchant</th>
             <th class="px-4 py-3">Description</th>
+            <th class="px-4 py-3">Account</th>
             <th class="px-4 py-3">Category</th>
             <th class="px-4 py-3 text-right">Amount</th>
         </tr>
@@ -16,6 +17,7 @@
             <td class="px-4 py-3 text-sm">{{ txn.date }}</td>
             <td class="px-4 py-3 text-sm">{{ txn.merchant }}</td>
             <td class="px-4 py-3 text-sm text-gray-500">{{ txn.raw_description }}</td>
+            <td class="px-4 py-3 text-sm text-gray-500">{{ txn.account_name or '—' }}</td>
             <td class="px-4 py-3 text-sm cursor-pointer text-blue-600 hover:underline"
                 onclick="(function(){ var edit=document.getElementById('edit-{{ txn.id }}'); if(edit){ edit.remove(); } })()"
                 hx-trigger="click[!document.getElementById('edit-{{ txn.id }}')]"
@@ -24,7 +26,9 @@
                 hx-swap="afterend">
                 {{ txn.category }}
             </td>
-            <td class="px-4 py-3 text-right">${{ "%.2f"|format(txn.amount|abs) }}</td>
+            <td class="px-4 py-3 text-right {{ 'text-red-600' if txn.amount < 0 else 'text-green-600' }}">
+                {{ '-$' if txn.amount < 0 else '+$' }}{{ "%.2f"|format(txn.amount|abs) }}
+            </td>
         </tr>
         {% endfor %}
     </tbody>

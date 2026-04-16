@@ -12,8 +12,12 @@
         {% for row in trends %}
         <tr class="border-b">
             <td class="px-4 py-3 font-medium">{{ row.category }}</td>
-            <td class="px-4 py-3 text-right">${{ "%.2f"|format(row.total|abs) }}</td>
-            <td class="px-4 py-3 text-right text-sm text-gray-500">${{ "%.2f"|format(row.monthly_avg|abs) }}</td>
+            <td class="px-4 py-3 text-right {{ 'text-red-600' if row.total < 0 else 'text-green-600' }}">
+                {{ '-$' if row.total < 0 else '+$' }}{{ "%.2f"|format(row.total|abs) }}
+            </td>
+            <td class="px-4 py-3 text-right text-sm {{ 'text-red-400' if row.monthly_avg < 0 else 'text-green-400' }}">
+                {{ '-$' if row.monthly_avg < 0 else '+$' }}{{ "%.2f"|format(row.monthly_avg|abs) }}
+            </td>
             <td class="px-4 py-3 text-center">{{ sparkline(row.sparkline_values) }}</td>
         </tr>
         {% endfor %}
@@ -21,7 +25,9 @@
     <tfoot>
         <tr class="font-semibold">
             <td class="px-4 py-3">Total</td>
-            <td class="px-4 py-3 text-right">${{ "%.2f"|format(grand_total|abs) }}</td>
+            <td class="px-4 py-3 text-right {{ 'text-red-600' if grand_total < 0 else 'text-green-600' }}">
+                {{ '-$' if grand_total < 0 else '+$' }}{{ "%.2f"|format(grand_total|abs) }}
+            </td>
             <td></td>
             <td></td>
         </tr>

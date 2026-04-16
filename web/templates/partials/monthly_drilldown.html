@@ -4,7 +4,9 @@
         <tr class="border-b border-gray-200 text-sm">
             <td class="px-8 py-2 text-gray-600">{{ txn.date }}</td>
             <td class="px-4 py-2">{{ txn.merchant }}</td>
-            <td class="px-4 py-2 text-right">${{ "%.2f"|format(txn.amount|abs) }}</td>
+            <td class="px-4 py-2 text-right {{ 'text-red-600' if txn.amount < 0 else 'text-green-600' }}">
+                {{ '-$' if txn.amount < 0 else '+$' }}{{ "%.2f"|format(txn.amount|abs) }}
+            </td>
         </tr>
         {% endfor %}
     </table>

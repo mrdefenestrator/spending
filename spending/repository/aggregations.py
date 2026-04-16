@@ -6,6 +6,7 @@ from sqlalchemy import Connection, extract, func, select
 from sqlalchemy.sql.functions import coalesce
 
 from spending.models import (
+    accounts,
     imports,
     merchant_cache,
     transaction_corrections,
@@ -46,6 +47,7 @@ def _base_query():
             _resolved_merchant(),
             _resolved_category(),
             transaction_corrections.c.id.label("correction_id"),
+            accounts.c.name.label("account_name"),
         )
         .select_from(
             transactions.join(imports, transactions.c.import_id == imports.c.id)
@@ -62,6 +64,7 @@ def _base_query():
             )
             == merchant_cache.c.merchant_name,
         )
+        .outerjoin(accounts, transactions.c.account_id == accounts.c.id)
         .where(imports.c.status == "confirmed")
     )
 
