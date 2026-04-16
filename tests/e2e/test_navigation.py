@@ -71,7 +71,13 @@ def test_merchants_page_renders_table(page, flask_server):
 
 
 def test_import_page_renders_form(page, flask_server):
-    """Import page renders the upload form and account selector."""
+    """Import page renders the upload dropzone and the account panel.
+
+    With an empty database there are no accounts, so the account panel shows
+    the inline create-account form rather than a populated <select>.
+    """
     page.goto(f"{flask_server}/import")
     assert page.locator("#dropzone").is_visible()
-    assert page.locator("select[name='account_id']").is_visible()
+    assert page.locator("#account-panel").is_visible()
+    # Empty DB → create form is shown instead of account dropdown
+    assert page.locator("text=No accounts yet").is_visible()

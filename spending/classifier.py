@@ -29,10 +29,9 @@ def classify_merchants(
     if not merchant_names:
         return {}
 
-    client = Anthropic()
-    prompt = _build_prompt(merchant_names, category_names)
-
     try:
+        client = Anthropic()
+        prompt = _build_prompt(merchant_names, category_names)
         response = client.messages.create(
             model="claude-haiku-4-5-20251001",
             max_tokens=1024,
