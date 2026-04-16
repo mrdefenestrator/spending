@@ -71,7 +71,9 @@ def test_monthly_category_row_shows_correct_count(page, confirmed_server):
     """The transaction count cell reflects all 4 seeded transactions."""
     page.goto(f"{confirmed_server}/monthly?year=2026&month=4")
     # Find the Uncategorized row and check its Count cell
-    row = page.locator("tbody tr", has=page.locator("td", has_text="Uncategorized")).first
+    row = page.locator(
+        "tbody tr", has=page.locator("td", has_text="Uncategorized")
+    ).first
     count_cell = row.locator("td").nth(1)
     assert count_cell.inner_text().strip() == "4"
 
@@ -86,7 +88,9 @@ def test_monthly_grand_total_reflects_seeded_data(page, confirmed_server):
 def test_monthly_drilldown_expands_on_click(page, confirmed_server):
     """Clicking a category row expands a nested transaction table via HTMX."""
     page.goto(f"{confirmed_server}/monthly?year=2026&month=4")
-    row = page.locator("tbody tr", has=page.locator("td", has_text="Uncategorized")).first
+    row = page.locator(
+        "tbody tr", has=page.locator("td", has_text="Uncategorized")
+    ).first
     with page.expect_response(lambda r: "drilldown" in r.url):
         row.click()
     # A nested table should now be visible inside the drilldown row
@@ -96,7 +100,9 @@ def test_monthly_drilldown_expands_on_click(page, confirmed_server):
 def test_monthly_drilldown_contains_transaction_rows(page, confirmed_server):
     """The drilldown table shows individual transaction rows."""
     page.goto(f"{confirmed_server}/monthly?year=2026&month=4")
-    row = page.locator("tbody tr", has=page.locator("td", has_text="Uncategorized")).first
+    row = page.locator(
+        "tbody tr", has=page.locator("td", has_text="Uncategorized")
+    ).first
     with page.expect_response(lambda r: "drilldown" in r.url):
         row.click()
     nested = page.locator("tbody tr + tr table tbody tr")
@@ -106,7 +112,9 @@ def test_monthly_drilldown_contains_transaction_rows(page, confirmed_server):
 def test_monthly_drilldown_shows_merchant_names(page, confirmed_server):
     """Drilldown rows include merchant names from the imported transactions."""
     page.goto(f"{confirmed_server}/monthly?year=2026&month=4")
-    row = page.locator("tbody tr", has=page.locator("td", has_text="Uncategorized")).first
+    row = page.locator(
+        "tbody tr", has=page.locator("td", has_text="Uncategorized")
+    ).first
     with page.expect_response(lambda r: "drilldown" in r.url):
         row.click()
     page.wait_for_selector("tbody tr + tr table")

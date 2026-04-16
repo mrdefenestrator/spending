@@ -144,7 +144,9 @@ def test_merchants_search_filters_results(page, confirmed_server):
     page.goto(f"{confirmed_server}/merchants")
     # If the table is empty, first ensure at least one merchant exists
     if page.locator("table tbody tr").count() == 0:
-        pytest.skip("No merchants present — run after test_merchants_appear_after_transaction_correction")
+        pytest.skip(
+            "No merchants present — run after test_merchants_appear_after_transaction_correction"
+        )
 
     total_before = page.locator("table tbody tr").count()
 

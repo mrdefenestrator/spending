@@ -58,7 +58,9 @@ def test_import_create_account_via_htmx_form(page, import_server):
     page.select_option("select[name='acct_type']", "checking")
 
     # Button uses hx-post="/accounts" → replaces #account-panel
-    with page.expect_response(lambda r: r.url.endswith("/accounts") and r.status == 200):
+    with page.expect_response(
+        lambda r: r.url.endswith("/accounts") and r.status == 200
+    ):
         page.click("button:has-text('Create Account')")
 
     page.wait_for_selector("select[name='account_id']")
@@ -116,7 +118,11 @@ def test_import_staging_shows_filename(page, import_server, ofx_file):
     # The batch was already created by the previous test; just reload the page
     # to verify the filename persists in the staging panel.
     content_text = page.locator("#content").inner_text()
-    assert "import.ofx" in content_text or "seed.ofx" in content_text or "No pending" not in content_text
+    assert (
+        "import.ofx" in content_text
+        or "seed.ofx" in content_text
+        or "No pending" not in content_text
+    )
 
 
 def test_import_staging_review_table_loads(page, import_server):
@@ -180,7 +186,9 @@ def test_import_reject_removes_batch_from_staging(page, import_server):
 # ---------------------------------------------------------------------------
 
 
-def test_import_duplicate_file_shows_already_imported_error(page, import_server, ofx_file):
+def test_import_duplicate_file_shows_already_imported_error(
+    page, import_server, ofx_file
+):
     """Re-uploading the first OFX file (already confirmed) shows an error message
     rather than creating a second staging batch."""
     page.goto(f"{import_server}/import")
@@ -202,7 +210,9 @@ def test_import_duplicate_file_shows_already_imported_error(page, import_server,
 # ---------------------------------------------------------------------------
 
 
-def test_import_ofx_detect_account_prefills_institution(page, import_server, ofx_file_with_institution):
+def test_import_ofx_detect_account_prefills_institution(
+    page, import_server, ofx_file_with_institution
+):
     """Selecting a QFX/OFX file in the dropzone sends it to /import/detect-account
     and the returned account panel is pre-filled with the institution name."""
     page.goto(f"{import_server}/import")
