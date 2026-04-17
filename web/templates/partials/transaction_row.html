@@ -1,6 +1,5 @@
 <tr id="txn-row-{{ txn.id }}" class="border-b hover:bg-gray-50">
-    <td class="px-4 py-3"><input type="checkbox" name="txn_ids" value="{{ txn.id }}"></td>
-    <td class="px-4 py-3 text-sm">{{ txn.date }}</td>
+<td class="px-4 py-3 text-sm">{{ txn.date }}</td>
     <td class="px-4 py-3 text-sm">{{ txn.merchant }}</td>
     <td class="px-4 py-3 text-sm text-gray-500">{{ txn.raw_description }}</td>
     <td class="px-4 py-3 text-sm text-gray-500">{{ txn.account_name or '—' }}</td>

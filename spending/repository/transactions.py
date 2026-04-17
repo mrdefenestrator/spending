@@ -1,7 +1,7 @@
 from calendar import monthrange
 from datetime import date
 
-from sqlalchemy import Connection, select
+from sqlalchemy import Connection, func, select
 
 from spending.repository.aggregations import _base_query
 
@@ -71,7 +71,7 @@ def get_transactions(
         "description": subq.c.raw_description,
         "account": subq.c.account_name,
         "category": subq.c.category,
-        "amount": subq.c.amount,
+        "amount": func.abs(subq.c.amount),
     }
     sort_col = _sort_cols.get(sort) if sort else None
     if sort_col is not None:

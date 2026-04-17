@@ -9,11 +9,22 @@ from spending.repository.merchants import (
 bp = Blueprint("merchants", __name__)
 
 
+_MERCHANT_SORT_KEYS = {
+    "merchant": lambda m: (m["merchant_name"] or "").lower(),
+    "category": lambda m: (m["category"] or "").lower(),
+    "source": lambda m: (m["source"] or "").lower(),
+    "txn_count": lambda m: m["txn_count"] or 0,
+    "last_seen": lambda m: m["last_seen"] or "",
+}
+
+
 @bp.route("/merchants")
 def index():
     search = request.args.get("search", "")
     filter_category = request.args.get("category", "")
     filter_source = request.args.get("source", "")
+    sort = request.args.get("sort", "")
+    sort_dir = request.args.get("dir", "")
 
     engine = current_app.config["engine"]
     with engine.connect() as conn:
@@ -29,8 +40,15 @@ def index():
     if filter_source:
         merchants = [m for m in merchants if m["source"] == filter_source]
 
+    if sort in _MERCHANT_SORT_KEYS:
+        merchants = sorted(
+            merchants, key=_MERCHANT_SORT_KEYS[sort], reverse=(sort_dir == "desc")
+        )
+    else:
+        merchants = sorted(merchants, key=lambda m: (m["merchant_name"] or "").lower())
+
     template = (
-        "partials/merchant_rows.html"
+        "partials/merchants_content.html"
         if request.headers.get("HX-Request")
         else "merchants.html"
     )
@@ -42,6 +60,8 @@ def index():
         search=search,
         selected_category=filter_category,
         selected_source=filter_source,
+        sort=sort,
+        dir=sort_dir,
     )
 
 

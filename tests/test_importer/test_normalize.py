@@ -14,7 +14,8 @@ def test_strip_trailing_reference_number():
 
 
 def test_strip_trailing_transaction_id():
-    assert normalize_merchant("AMZN MKTP US*2K7X9") == "AMZN MKTP"
+    # Transaction ID stripped, then alias collapses AMZN MKTP US → AMAZON
+    assert normalize_merchant("AMZN MKTP US*2K7X9") == "AMAZON"
 
 
 def test_strip_city_state_comma():

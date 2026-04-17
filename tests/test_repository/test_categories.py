@@ -10,7 +10,7 @@ from spending.repository.categories import (
 def test_seed_categories(conn):
     seed_categories(conn, "configs/categories.yaml")
     cats = list_categories(conn)
-    assert len(cats) == 14
+    assert len(cats) == 16
     assert cats[0]["name"] == "Groceries"
     assert cats[-1]["name"] == "Other"
 
@@ -19,7 +19,7 @@ def test_seed_categories_is_idempotent(conn):
     seed_categories(conn, "configs/categories.yaml")
     seed_categories(conn, "configs/categories.yaml")
     cats = list_categories(conn)
-    assert len(cats) == 14
+    assert len(cats) == 16
 
 
 def test_add_category(conn):
@@ -34,7 +34,7 @@ def test_get_category_names(conn):
     names = get_category_names(conn)
     assert "Groceries" in names
     assert "Dining" in names
-    assert len(names) == 14
+    assert len(names) == 16
 
 
 def test_delete_category(conn):

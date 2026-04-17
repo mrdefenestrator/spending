@@ -5,20 +5,40 @@ from spending.repository.accounts import add_account, edit_account, list_account
 
 VALID_ACCOUNT_TYPES = {"checking", "savings", "credit_card", "other"}
 
+_ACCOUNT_SORT_KEYS = {
+    "name": lambda a: (a["name"] or "").lower(),
+    "institution": lambda a: (a["institution"] or "").lower(),
+    "type": lambda a: (a["account_type"] or "").lower(),
+    "created": lambda a: str(a["created_at"] or ""),
+}
+
 bp = Blueprint("accounts", __name__)
+
+
+def _sort_accounts(accts: list, sort: str, sort_dir: str) -> list:
+    if sort in _ACCOUNT_SORT_KEYS:
+        return sorted(
+            accts, key=_ACCOUNT_SORT_KEYS[sort], reverse=(sort_dir == "desc")
+        )
+    return sorted(accts, key=lambda a: (a["name"] or "").lower())
 
 
 @bp.route("/accounts")
 def index():
+    sort = request.args.get("sort", "")
+    sort_dir = request.args.get("dir", "")
     engine = current_app.config["engine"]
     with engine.connect() as conn:
         accts = list_accounts(conn)
+    accts = _sort_accounts(accts, sort, sort_dir)
     template = (
         "partials/accounts_content.html"
         if request.headers.get("HX-Request")
         else "accounts.html"
     )
-    return render_template(template, active_tab="accounts", accounts=accts)
+    return render_template(
+        template, active_tab="accounts", accounts=accts, sort=sort, dir=sort_dir
+    )
 
 
 @bp.route("/accounts/<int:account_id>/edit")
@@ -41,9 +61,18 @@ def update(account_id):
     engine = current_app.config["engine"]
     with engine.connect() as conn:
         if name and institution:
-            edit_account(conn, account_id, name=name, institution=institution, account_type=account_type)
+            edit_account(
+                conn,
+                account_id,
+                name=name,
+                institution=institution,
+                account_type=account_type,
+            )
         accts = list_accounts(conn)
-    return render_template("partials/accounts_content.html", active_tab="accounts", accounts=accts)
+    accts = _sort_accounts(accts, "", "")
+    return render_template(
+        "partials/accounts_content.html", active_tab="accounts", accounts=accts, sort="", dir=""
+    )
 
 
 @bp.route("/accounts", methods=["POST"])

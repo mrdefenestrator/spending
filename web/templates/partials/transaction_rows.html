@@ -21,8 +21,7 @@
 <table class="w-full bg-white rounded-lg shadow-sm">
     <thead>
         <tr class="border-b text-left text-sm text-gray-500">
-            <th class="px-4 py-3 w-8"><input type="checkbox" id="select-all"></th>
-            <th class="px-4 py-3 whitespace-nowrap">
+<th class="px-4 py-3 whitespace-nowrap">
               Date{% if not sort %}<span class="ml-1 text-xs">↓</span>{% endif %}
             </th>
             {{ sort_th("merchant", "Merchant") }}
@@ -35,8 +34,7 @@
     <tbody>
         {% for txn in transactions %}
         <tr id="txn-row-{{ txn.id }}" class="border-b hover:bg-gray-50">
-            <td class="px-4 py-3"><input type="checkbox" name="txn_ids" value="{{ txn.id }}"></td>
-            <td class="px-4 py-3 text-sm">{{ txn.date }}</td>
+<td class="px-4 py-3 text-sm">{{ txn.date }}</td>
             <td class="px-4 py-3 text-sm">{{ txn.merchant }}</td>
             <td class="px-4 py-3 text-sm text-gray-500">{{ txn.raw_description }}</td>
             <td class="px-4 py-3 text-sm text-gray-500">{{ txn.account_name or '—' }}</td>

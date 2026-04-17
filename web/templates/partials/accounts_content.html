@@ -1,27 +1,62 @@
+{% macro sort_th(col, label, first_dir="asc", extra_class="", is_default=False) %}
+  {% set active = (sort == col) or (not sort and is_default) %}
+  {% set active_dir = dir if sort else ("asc" if is_default else "") %}
+  {% if active %}
+    {% if active_dir == first_dir %}
+      {% set next_url = "/accounts?sort=" ~ col ~ "&dir=" ~ ("desc" if first_dir == "asc" else "asc") %}
+    {% else %}
+      {% set next_url = "/accounts?sort=&dir=" %}
+    {% endif %}
+  {% else %}
+    {% set next_url = "/accounts?sort=" ~ col ~ "&dir=" ~ first_dir %}
+  {% endif %}
+  <th class="px-4 py-3 cursor-pointer select-none whitespace-nowrap group hover:bg-gray-50 {{ extra_class }}"
+      hx-get="{{ next_url }}" hx-target="#content" hx-include="[name]" hx-push-url="true">
+    {{- label -}}
+    {% if active %}
+      <span class="ml-1 text-xs">{{ "↑" if active_dir == "asc" else "↓" }}</span>
+    {% else %}
+      <span class="ml-1 text-xs text-gray-300 opacity-0 group-hover:opacity-100">↕</span>
+    {% endif %}
+  </th>
+{% endmacro %}
 {% set type_labels = {"checking": "Checking", "savings": "Savings", "credit_card": "Credit Card", "other": "Other"} %}
 <h2 class="text-lg font-semibold mb-4">Accounts</h2>
+<input type="hidden" name="sort" value="{{ sort or '' }}">
+<input type="hidden" name="dir" value="{{ dir or '' }}">
 {% if accounts %}
 <table class="w-full bg-white rounded-lg shadow-sm">
     <thead>
         <tr class="border-b text-left text-sm text-gray-500">
-            <th class="px-4 py-3">Name</th>
-            <th class="px-4 py-3">Institution</th>
-            <th class="px-4 py-3">Type</th>
-            <th class="px-4 py-3 text-gray-400 text-xs font-normal">Created</th>
+            {{ sort_th("name", "Name", is_default=True) }}
+            {{ sort_th("institution", "Institution") }}
+            {{ sort_th("type", "Type") }}
+            {{ sort_th("created", "Created", first_dir="desc", extra_class="text-gray-400 text-xs font-normal") }}
+            <th class="px-4 py-3 w-10"></th>
         </tr>
     </thead>
     <tbody>
         {% for a in accounts %}
         <tr id="account-row-{{ a.id }}" class="border-b hover:bg-gray-50">
-            <td class="px-4 py-3 font-medium text-sm cursor-pointer text-blue-600 hover:underline"
-                hx-get="/accounts/{{ a.id }}/edit"
-                hx-target="#account-row-{{ a.id }}"
-                hx-swap="outerHTML">
-                {{ a.name }}
+            <td class="px-4 py-3 font-medium text-sm">
+                <a class="text-blue-600 hover:underline cursor-pointer"
+                   hx-get="/transactions?account_id={{ a.id }}"
+                   hx-target="#content" hx-push-url="true">{{ a.name }}</a>
             </td>
             <td class="px-4 py-3 text-sm">{{ a.institution }}</td>
             <td class="px-4 py-3 text-sm text-gray-500">{{ type_labels.get(a.account_type, a.account_type) }}</td>
             <td class="px-4 py-3 text-xs text-gray-400">{{ a.created_at.strftime('%Y-%m-%d') if a.created_at else '—' }}</td>
+            <td class="px-4 py-3">
+                <button class="text-gray-400 hover:text-gray-600 p-1 rounded"
+                        hx-get="/accounts/{{ a.id }}/edit"
+                        hx-target="#account-row-{{ a.id }}"
+                        hx-swap="outerHTML">
+                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                              d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"/>
+                    </svg>
+                </button>
+            </td>
         </tr>
         {% endfor %}
     </tbody>

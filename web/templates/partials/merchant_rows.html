@@ -1,26 +1,59 @@
+{% macro sort_th(col, label, first_dir="asc", extra_class="", is_default=False) %}
+  {% set active = (sort == col) or (not sort and is_default) %}
+  {% set active_dir = dir if sort else ("asc" if is_default else "") %}
+  {% if active %}
+    {% if active_dir == first_dir %}
+      {% set next_url = "/merchants?sort=" ~ col ~ "&dir=" ~ ("desc" if first_dir == "asc" else "asc") %}
+    {% else %}
+      {% set next_url = "/merchants?sort=&dir=" %}
+    {% endif %}
+  {% else %}
+    {% set next_url = "/merchants?sort=" ~ col ~ "&dir=" ~ first_dir %}
+  {% endif %}
+  <th class="px-4 py-3 cursor-pointer select-none whitespace-nowrap group hover:bg-gray-50 {{ extra_class }}"
+      hx-get="{{ next_url }}" hx-target="#content" hx-include="[name]" hx-push-url="true">
+    {{- label -}}
+    {% if active %}
+      <span class="ml-1 text-xs">{{ "↑" if active_dir == "asc" else "↓" }}</span>
+    {% else %}
+      <span class="ml-1 text-xs text-gray-300 opacity-0 group-hover:opacity-100">↕</span>
+    {% endif %}
+  </th>
+{% endmacro %}
 <table class="w-full bg-white rounded-lg shadow-sm">
     <thead>
         <tr class="border-b text-left text-sm text-gray-500">
-            <th class="px-4 py-3">Merchant</th>
-            <th class="px-4 py-3">Category</th>
-            <th class="px-4 py-3">Source</th>
-            <th class="px-4 py-3 text-right">Transactions</th>
-            <th class="px-4 py-3">Last Seen</th>
+            {{ sort_th("merchant", "Merchant", is_default=True) }}
+            {{ sort_th("category", "Category") }}
+            {{ sort_th("source", "Source") }}
+            {{ sort_th("txn_count", "Transactions", first_dir="desc", extra_class="text-right") }}
+            {{ sort_th("last_seen", "Last Seen", first_dir="desc") }}
+            <th class="px-4 py-3 w-10"></th>
         </tr>
     </thead>
     <tbody>
         {% for m in merchants %}
         <tr class="border-b hover:bg-gray-50">
-            <td class="px-4 py-3 font-medium text-sm">{{ m.merchant_name }}</td>
-            <td class="px-4 py-3 text-sm cursor-pointer text-blue-600 hover:underline"
-                hx-get="/merchants/{{ m.id }}/edit"
-                hx-target="closest tr"
-                hx-swap="afterend">
-                {{ m.category }}
+            <td class="px-4 py-3 font-medium text-sm">
+                <a class="text-blue-600 hover:underline cursor-pointer"
+                   hx-get="/transactions?search={{ m.merchant_name | urlencode }}"
+                   hx-target="#content" hx-push-url="true">{{ m.merchant_name }}</a>
             </td>
+            <td class="px-4 py-3 text-sm">{{ m.category }}</td>
             <td class="px-4 py-3 text-sm text-gray-500">{{ m.source }}</td>
             <td class="px-4 py-3 text-right text-sm">{{ m.txn_count }}</td>
             <td class="px-4 py-3 text-sm text-gray-500">{{ m.last_seen or '—' }}</td>
+            <td class="px-4 py-3">
+                <button class="text-gray-400 hover:text-gray-600 p-1 rounded"
+                        hx-get="/merchants/{{ m.id }}/edit"
+                        hx-target="closest tr"
+                        hx-swap="afterend">
+                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                              d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"/>
+                    </svg>
+                </button>
+            </td>
         </tr>
         {% endfor %}
     </tbody>

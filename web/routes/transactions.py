@@ -117,19 +117,8 @@ def update_category(txn_id):
     if not updated:
         return "", 404
 
-    row_html = render_template("partials/transaction_row.html", txn=dict(updated._mapping))
+    row_html = render_template(
+        "partials/transaction_row.html", txn=dict(updated._mapping)
+    )
     oob_delete = f'<tr id="edit-{txn_id}" hx-swap-oob="delete"></tr>'
     return Response(row_html + oob_delete, content_type="text/html")
-
-
-@bp.route("/transactions/bulk-categorize", methods=["POST"])
-def bulk_categorize():
-    txn_ids = request.form.getlist("txn_ids", type=int)
-    category = request.form["category"]
-
-    engine = current_app.config["engine"]
-    with engine.connect() as conn:
-        for txn_id in txn_ids:
-            apply_transaction_correction(conn, txn_id, category=category)
-
-    return "", 200, {"HX-Trigger": "refreshTransactions"}

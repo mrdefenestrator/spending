@@ -81,13 +81,6 @@ function initDropzone() {
 document.addEventListener('DOMContentLoaded', function () {
     initDropzone();
 
-    // Select all checkbox
-    document.addEventListener('change', function (e) {
-        if (e.target.id === 'select-all') {
-            const checkboxes = document.querySelectorAll('input[name="txn_ids"]');
-            checkboxes.forEach(cb => cb.checked = e.target.checked);
-        }
-    });
 });
 
 // Re-init after HTMX swaps content (DOMContentLoaded only fires once)
