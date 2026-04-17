@@ -1,35 +1,155 @@
-{% from "partials/sparkline.svg" import sparkline %}
-<table class="w-full bg-white rounded-lg shadow-sm">
+<div class="flex items-center gap-2 mb-6">
+    {% for p, label in [("quarterly", "Quarterly"), ("ytd", "Year to Date"), ("trailing12", "Trailing 12 Mo"), ("annual", "Last Year")] %}
+    <a href="/trends?period={{ p }}"
+       hx-get="/trends?period={{ p }}" hx-target="#content" hx-push-url="true"
+       class="px-3 py-1.5 text-sm rounded {{ 'bg-blue-500 text-white' if period == p else 'bg-gray-100 text-gray-700 hover:bg-gray-200' }}">
+        {{ label }}
+    </a>
+    {% endfor %}
+</div>
+
+{% macro month_cells(row) %}
+    {% for i in range(month_labels|length) %}
+    {% set val = row.monthly_values[i] %}
+    {% set heat = row.monthly_heat[i] %}
+    {% set alpha = 0.05 + heat * 0.55 %}
+    {% set ym = sorted_months[i] %}
+    {% if val != 0 %}
+    <td class="px-3 py-2.5 text-right tabular-nums"
+        style="background-color: {{ 'rgba(239,68,68,' if val < 0 else 'rgba(34,197,94,' }}{{ '%.2f'|format(alpha) }})"
+        title="View {{ row.category }} transactions for {{ month_labels[i] }}"
+        onclick="event.stopPropagation(); navigateToTransactions({{ ym[0] }}, {{ ym[1] }}, this.dataset.category)"
+        data-category="{{ row.category }}">
+        <span class="{{ 'text-white font-medium' if heat > 0.65 else 'text-gray-700' }} hover:underline">
+            {% if val|abs >= 1000 %}${{ '%.1f'|format(val|abs / 1000) }}k
+            {% else %}${{ '%.0f'|format(val|abs) }}
+            {% endif %}
+        </span>
+    </td>
+    {% else %}
+    <td class="px-3 py-2.5 text-right tabular-nums"
+        style="background-color: {{ 'rgba(239,68,68,' if val < 0 else 'rgba(34,197,94,' }}{{ '%.2f'|format(alpha) }})">
+        <span class="text-gray-300">—</span>
+    </td>
+    {% endif %}
+    {% endfor %}
+{% endmacro %}
+
+{% macro change_cell(pct_change, is_expense, cell_class="px-4 py-2.5") %}
+<td class="{{ cell_class }} text-right tabular-nums whitespace-nowrap">
+    {% if pct_change is not none %}
+        {% set abs_pct = pct_change|abs %}
+        {% if pct_change > 0 %}
+        <span class="{{ 'text-red-500' if is_expense else 'text-green-500' }}">▲ {{ '%.0f'|format(abs_pct) }}%</span>
+        {% else %}
+        <span class="{{ 'text-green-500' if is_expense else 'text-red-500' }}">▼ {{ '%.0f'|format(abs_pct) }}%</span>
+        {% endif %}
+    {% else %}
+    <span class="text-gray-300">—</span>
+    {% endif %}
+</td>
+{% endmacro %}
+
+{% macro trend_cell(slope, is_expense, cell_class="px-4 py-2.5") %}
+<td class="{{ cell_class }} text-right tabular-nums whitespace-nowrap">
+    {% if slope is not none %}
+        {% set abs_slope = slope|abs %}
+        {% if abs_slope < 3 %}
+        <span class="text-gray-400">→ flat</span>
+        {% elif slope > 0 %}
+        <span class="{{ 'text-red-500' if is_expense else 'text-green-500' }}">
+            ↗ {% if abs_slope >= 1000 %}${{ '%.1f'|format(abs_slope / 1000) }}k{% else %}${{ '%.0f'|format(abs_slope) }}{% endif %}/mo
+        </span>
+        {% else %}
+        <span class="{{ 'text-green-500' if is_expense else 'text-red-500' }}">
+            ↘ {% if abs_slope >= 1000 %}${{ '%.1f'|format(abs_slope / 1000) }}k{% else %}${{ '%.0f'|format(abs_slope) }}{% endif %}/mo
+        </span>
+        {% endif %}
+    {% else %}
+    <span class="text-gray-300">—</span>
+    {% endif %}
+</td>
+{% endmacro %}
+
+<div class="overflow-x-auto">
+<table class="w-full bg-white rounded-lg shadow-sm text-sm">
     <thead>
-        <tr class="border-b text-left text-sm text-gray-500">
+        <tr class="border-b text-left text-xs text-gray-400 uppercase tracking-wide">
             <th class="px-4 py-3">Category</th>
-            <th class="px-4 py-3 text-right">Total</th>
-            <th class="px-4 py-3 text-right">Monthly Avg</th>
-            <th class="px-4 py-3 text-center">Trend</th>
+            {% for label in month_labels %}
+            <th class="px-3 py-3 text-right">{{ label }}</th>
+            {% endfor %}
+            <th class="px-4 py-3 text-right">Avg/mo</th>
+            <th class="px-4 py-3 text-right">Change</th>
+            <th class="px-4 py-3 text-right">Trend</th>
         </tr>
     </thead>
     <tbody>
         {% for row in trends %}
-        <tr class="border-b">
-            <td class="px-4 py-3 font-medium">{{ row.category }}</td>
-            <td class="px-4 py-3 text-right {{ 'text-red-600' if row.total < 0 else 'text-green-600' }}">
-                {{ '-$' if row.total < 0 else '+$' }}{{ "%.2f"|format(row.total|abs) }}
+        <tr class="border-b hover:brightness-95 cursor-pointer"
+            data-category="{{ row.category }}"
+            onclick="toggleTrendDetail('{{ loop.index }}', this.dataset.category, '{{ period }}')">
+            <td class="px-4 py-2.5 font-medium text-gray-800 whitespace-nowrap">
+                <span id="arrow-{{ loop.index }}" class="mr-1.5 text-gray-300 text-xs">▶</span>{{ row.category }}
             </td>
-            <td class="px-4 py-3 text-right text-sm {{ 'text-red-400' if row.monthly_avg < 0 else 'text-green-400' }}">
-                {{ '-$' if row.monthly_avg < 0 else '+$' }}{{ "%.2f"|format(row.monthly_avg|abs) }}
+            {{ month_cells(row) }}
+            <td class="px-4 py-2.5 text-right tabular-nums text-gray-500">
+                ${{ '%.0f'|format(row.monthly_avg|abs) }}
             </td>
-            <td class="px-4 py-3 text-center">{{ sparkline(row.sparkline_values) }}</td>
+            {{ change_cell(row.pct_change, row.total < 0) }}
+            {{ trend_cell(row.trend_slope, row.total < 0) }}
+        </tr>
+        <tr id="trend-detail-{{ loop.index }}" class="hidden">
+            <td colspan="{{ month_labels|length + 4 }}" class="p-0 bg-gray-50 border-b">
+                <div class="p-4 text-xs text-gray-400 italic">Loading...</div>
+            </td>
         </tr>
         {% endfor %}
     </tbody>
     <tfoot>
-        <tr class="font-semibold">
-            <td class="px-4 py-3">Total</td>
-            <td class="px-4 py-3 text-right {{ 'text-red-600' if grand_total < 0 else 'text-green-600' }}">
-                {{ '-$' if grand_total < 0 else '+$' }}{{ "%.2f"|format(grand_total|abs) }}
+        <tr class="font-semibold border-t-2 border-gray-200 bg-gray-50">
+            <td class="px-4 py-3 text-gray-600">Total</td>
+            {% for val in monthly_footer_values %}
+            <td class="px-3 py-3 text-right tabular-nums {{ 'text-red-600' if val < 0 else 'text-green-600' if val > 0 else 'text-gray-300' }}">
+                {% if val == 0 %}—
+                {% elif val|abs >= 1000 %}${{ '%.1f'|format(val|abs / 1000) }}k
+                {% else %}${{ '%.0f'|format(val|abs) }}
+                {% endif %}
             </td>
-            <td></td>
-            <td></td>
+            {% endfor %}
+            <td class="px-4 py-3 text-right tabular-nums {{ 'text-red-600' if grand_total < 0 else 'text-green-600' }}">
+                ${{ '%.0f'|format(grand_total|abs / num_months) }}
+            </td>
+            {{ change_cell(footer_pct_change, grand_total < 0, "px-4 py-3") }}
+            {{ trend_cell(footer_trend_slope, grand_total < 0, "px-4 py-3") }}
         </tr>
+        {% if trends_excluded %}
+        <tr>
+            <td colspan="{{ month_labels|length + 4 }}" class="px-4 pt-5 pb-1 text-xs text-gray-400 uppercase tracking-wide">
+                Not included in total
+            </td>
+        </tr>
+        {% for row in trends_excluded %}
+        <tr class="border-b border-gray-100 hover:brightness-95 cursor-pointer opacity-60"
+            data-category="{{ row.category }}"
+            onclick="toggleTrendDetail('ex{{ loop.index }}', this.dataset.category, '{{ period }}')">
+            <td class="px-4 py-2.5 font-medium text-gray-700 whitespace-nowrap">
+                <span id="arrow-ex{{ loop.index }}" class="mr-1.5 text-gray-300 text-xs">▶</span>{{ row.category }}
+            </td>
+            {{ month_cells(row) }}
+            <td class="px-4 py-2.5 text-right tabular-nums text-gray-500">
+                ${{ '%.0f'|format(row.monthly_avg|abs) }}
+            </td>
+            {{ change_cell(row.pct_change, row.total < 0) }}
+            {{ trend_cell(row.trend_slope, row.total < 0) }}
+        </tr>
+        <tr id="trend-detail-ex{{ loop.index }}" class="hidden">
+            <td colspan="{{ month_labels|length + 4 }}" class="p-0 bg-gray-50 border-b">
+                <div class="p-4 text-xs text-gray-400 italic">Loading...</div>
+            </td>
+        </tr>
+        {% endfor %}
+        {% endif %}
     </tfoot>
 </table>
+</div>

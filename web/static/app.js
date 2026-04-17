@@ -92,3 +92,38 @@ document.addEventListener('DOMContentLoaded', function () {
 
 // Re-init after HTMX swaps content (DOMContentLoaded only fires once)
 document.addEventListener('htmx:afterSettle', initDropzone);
+
+function navigateToTransactions(year, month, category) {
+    window.location.href = '/transactions?year=' + year + '&month=' + month + '&category=' + encodeURIComponent(category);
+}
+
+function toggleTrendDetail(rowId, category, period) {
+    const detailRow = document.getElementById('trend-detail-' + rowId);
+    const arrow = document.getElementById('arrow-' + rowId);
+    if (!detailRow) return;
+
+    if (detailRow.classList.contains('hidden')) {
+        detailRow.classList.remove('hidden');
+        if (arrow) { arrow.textContent = '▼'; arrow.classList.replace('text-gray-300', 'text-gray-500'); }
+        if (!detailRow.dataset.loaded) {
+            detailRow.dataset.loaded = 'true';
+            const cell = detailRow.querySelector('td');
+            fetch('/trends/detail?category=' + encodeURIComponent(category) + '&period=' + encodeURIComponent(period))
+                .then(r => r.text())
+                .then(html => { cell.innerHTML = html; })
+                .catch(() => { cell.innerHTML = '<div class="p-4 text-xs text-red-400">Failed to load detail.</div>'; });
+        }
+    } else {
+        detailRow.classList.add('hidden');
+        if (arrow) { arrow.textContent = '▶'; arrow.classList.replace('text-gray-500', 'text-gray-300'); }
+    }
+}
+
+document.addEventListener('htmx:configRequest', function(e) {
+    const path = e.detail.path;
+    if (path !== '/monthly' && path !== '/transactions') return;
+    const state = document.getElementById('month-state');
+    if (!state) return;
+    if (!e.detail.parameters.year) e.detail.parameters.year = state.dataset.year;
+    if (!e.detail.parameters.month) e.detail.parameters.month = state.dataset.month;
+});

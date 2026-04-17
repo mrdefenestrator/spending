@@ -1,5 +1,6 @@
 {% set filter_qs %}{% if selected_account %}&account_id={{ selected_account }}{% endif %}{% if selected_category %}&category={{ selected_category | urlencode }}{% endif %}{% if selected_status %}&status={{ selected_status }}{% endif %}{% if search %}&search={{ search | urlencode }}{% endif %}{% endset %}
 
+<span id="month-state" data-year="{{ year }}" data-month="{{ month }}" hidden></span>
 <div class="mb-4 flex flex-wrap gap-2 items-center justify-between">
     <div class="flex flex-wrap gap-2 items-end">
         <select name="account_id" hx-get="/transactions" hx-target="#content" hx-include="[name]"
