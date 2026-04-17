@@ -22,8 +22,12 @@ run = "uv run ruff check --fix spending/ web/ tests/ spending.py"
 description = "Fix lint issues with ruff"
 
 [tasks.test]
-depends = ["format-check", "lint", "test-unit"]
-description = "Run all CI checks"
+depends = ["format-check", "lint"]
+run = [
+    "uv run pytest tests/ -v --cov=spending --cov-report=term-missing -m 'not e2e'",
+    "uv run pytest tests/e2e/ -v -m e2e",
+]
+description = "Run all CI checks (format, lint, unit, e2e)"
 
 [tasks.test-unit]
 run = "uv run pytest tests/ -v --cov=spending --cov-report=term-missing -m 'not e2e'"
