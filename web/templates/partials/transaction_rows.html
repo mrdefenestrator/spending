@@ -12,7 +12,7 @@
     </thead>
     <tbody>
         {% for txn in transactions %}
-        <tr class="border-b hover:bg-gray-50">
+        <tr id="txn-row-{{ txn.id }}" class="border-b hover:bg-gray-50">
             <td class="px-4 py-3"><input type="checkbox" name="txn_ids" value="{{ txn.id }}"></td>
             <td class="px-4 py-3 text-sm">{{ txn.date }}</td>
             <td class="px-4 py-3 text-sm">{{ txn.merchant }}</td>

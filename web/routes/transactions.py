@@ -1,6 +1,6 @@
 from datetime import date
 
-from flask import Blueprint, current_app, render_template, request
+from flask import Blueprint, Response, current_app, render_template, request
 
 from spending.repository.accounts import list_accounts
 from spending.repository.categories import get_category_names
@@ -93,11 +93,25 @@ def update_category(txn_id):
             ).fetchone()
             if row:
                 set_merchant_category(conn, row[0], category, source="manual")
+            # Many rows changed — reload the content area preserving URL state
+            current_url = request.headers.get("HX-Current-URL", "/transactions")
+            return "", 204, {"HX-Redirect": current_url}
         else:
             apply_transaction_correction(conn, txn_id, category=category)
 
-    current_url = request.headers.get("HX-Current-URL", "/transactions")
-    return "", 204, {"HX-Redirect": current_url}
+        from spending.repository.aggregations import _base_query
+        from spending.models import transactions as txn_table
+        from sqlalchemy import select
+
+        subq = _base_query().where(txn_table.c.id == txn_id).subquery()
+        updated = conn.execute(select(subq)).fetchone()
+
+    if not updated:
+        return "", 404
+
+    row_html = render_template("partials/transaction_row.html", txn=dict(updated._mapping))
+    oob_delete = f'<tr id="edit-{txn_id}" hx-swap-oob="delete"></tr>'
+    return Response(row_html + oob_delete, content_type="text/html")
 
 
 @bp.route("/transactions/bulk-categorize", methods=["POST"])

@@ -1,6 +1,6 @@
 <tr id="edit-{{ txn_id }}" class="bg-blue-50 border-b">
     <td colspan="7" class="px-4 py-3">
-        <form hx-post="/transactions/{{ txn_id }}/category" hx-target="#content" hx-swap="innerHTML"
+        <form hx-post="/transactions/{{ txn_id }}/category" hx-target="#txn-row-{{ txn_id }}" hx-swap="outerHTML"
               class="flex items-center gap-3">
             <select name="category" class="border rounded px-2 py-1.5 text-sm">
                 {% for c in categories %}

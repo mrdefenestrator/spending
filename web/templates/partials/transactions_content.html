@@ -3,21 +3,21 @@
 <span id="month-state" data-year="{{ year }}" data-month="{{ month }}" hidden></span>
 <div class="mb-4 flex flex-wrap gap-2 items-center justify-between">
     <div class="flex flex-wrap gap-2 items-end">
-        <select name="account_id" hx-get="/transactions" hx-target="#content" hx-include="[name]"
+        <select name="account_id" hx-get="/transactions" hx-target="#content" hx-include="[name]" hx-push-url="true"
                 class="border rounded px-2 py-1.5 text-sm">
             <option value="">All Accounts</option>
             {% for a in accounts %}
             <option value="{{ a.id }}" {{ 'selected' if selected_account == a.id }}>{{ a.name }}</option>
             {% endfor %}
         </select>
-        <select name="category" hx-get="/transactions" hx-target="#content" hx-include="[name]"
+        <select name="category" hx-get="/transactions" hx-target="#content" hx-include="[name]" hx-push-url="true"
                 class="border rounded px-2 py-1.5 text-sm">
             <option value="">All Categories</option>
             {% for c in categories %}
             <option value="{{ c }}" {{ 'selected' if selected_category == c }}>{{ c }}</option>
             {% endfor %}
         </select>
-        <select name="status" hx-get="/transactions" hx-target="#content" hx-include="[name]"
+        <select name="status" hx-get="/transactions" hx-target="#content" hx-include="[name]" hx-push-url="true"
                 class="border rounded px-2 py-1.5 text-sm">
             <option value="">All Status</option>
             <option value="categorized" {{ 'selected' if selected_status == 'categorized' }}>Categorized</option>
@@ -25,7 +25,7 @@
             <option value="corrected" {{ 'selected' if selected_status == 'corrected' }}>Corrected</option>
         </select>
         <input type="search" name="search" value="{{ search }}" placeholder="Search..."
-               hx-get="/transactions" hx-target="#content" hx-include="[name]"
+               hx-get="/transactions" hx-target="#content" hx-include="[name]" hx-push-url="true"
                hx-trigger="keyup changed delay:300ms"
                class="border rounded px-2 py-1.5 text-sm">
         <input type="hidden" name="year" value="{{ year }}">
