@@ -20,13 +20,14 @@ def index():
     account_id = request.args.get("account_id", type=int)
     search = request.args.get("search")
     status = request.args.get("status")
+    all_months = request.args.get("all_months") == "true"
 
     engine = current_app.config["engine"]
     with engine.connect() as conn:
         txns = get_transactions(
             conn,
-            year=year,
-            month=month,
+            year=None if all_months else year,
+            month=None if all_months else month,
             category=category,
             account_id=account_id,
             search=search,
@@ -61,6 +62,7 @@ def index():
         selected_account=account_id,
         search=search or "",
         selected_status=status,
+        all_months=all_months,
     )
 
 

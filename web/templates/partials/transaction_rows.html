@@ -27,7 +27,7 @@
                 {{ txn.category }}
             </td>
             <td class="px-4 py-3 text-right {{ 'text-red-600' if txn.amount < 0 else 'text-green-600' }}">
-                {{ '-$' if txn.amount < 0 else '+$' }}{{ "%.2f"|format(txn.amount|abs) }}
+                {{ '-$' if txn.amount < 0 else '+$' }}{{ txn.amount|abs|money }}
             </td>
         </tr>
         {% endfor %}

@@ -7,10 +7,8 @@
             <span class="text-xs text-gray-500 mb-1 leading-none">
                 {% if abs_val == 0 %}
                 —
-                {% elif abs_val >= 1000 %}
-                ${{ '%.1f'|format(abs_val / 1000) }}k
                 {% else %}
-                ${{ '%.0f'|format(abs_val) }}
+                ${{ abs_val|money(0) }}
                 {% endif %}
             </span>
             <div class="w-full rounded-t {{ 'bg-red-300' if values[i] < 0 else 'bg-green-300' if values[i] > 0 else 'bg-gray-100' }}"

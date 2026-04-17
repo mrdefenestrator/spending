@@ -1,4 +1,4 @@
-{% set filter_qs %}{% if selected_account %}&account_id={{ selected_account }}{% endif %}{% if selected_category %}&category={{ selected_category | urlencode }}{% endif %}{% if selected_status %}&status={{ selected_status }}{% endif %}{% if search %}&search={{ search | urlencode }}{% endif %}{% endset %}
+{% set filter_qs %}{% if selected_account %}&account_id={{ selected_account }}{% endif %}{% if selected_category %}&category={{ selected_category | urlencode }}{% endif %}{% if selected_status %}&status={{ selected_status }}{% endif %}{% if search %}&search={{ search | urlencode }}{% endif %}{% if all_months %}&all_months=true{% endif %}{% endset %}
 
 <span id="month-state" data-year="{{ year }}" data-month="{{ month }}" hidden></span>
 <div class="mb-4 flex flex-wrap gap-2 items-center justify-between">
@@ -28,9 +28,17 @@
                hx-get="/transactions" hx-target="#content" hx-include="[name]" hx-push-url="true"
                hx-trigger="keyup changed delay:300ms"
                class="border rounded px-2 py-1.5 text-sm">
+        <label class="flex items-center gap-1.5 text-sm text-gray-600 cursor-pointer select-none">
+            <input type="checkbox" name="all_months" value="true"
+                   {{ 'checked' if all_months }}
+                   hx-get="/transactions" hx-target="#content" hx-include="[name]" hx-push-url="true"
+                   hx-trigger="change">
+            All months
+        </label>
         <input type="hidden" name="year" value="{{ year }}">
         <input type="hidden" name="month" value="{{ month }}">
     </div>
+    {% if not all_months %}
     <div class="flex items-center space-x-2">
         <a hx-get="/transactions?year={{ prev_year }}&month={{ prev_month }}{{ filter_qs }}"
            hx-target="#content" hx-push-url="true"
@@ -40,6 +48,7 @@
            hx-target="#content" hx-push-url="true"
            class="px-2 py-1 text-gray-600 hover:bg-gray-100 rounded cursor-pointer">&rarr;</a>
     </div>
+    {% endif %}
 </div>
 
 {% include "partials/transaction_rows.html" %}

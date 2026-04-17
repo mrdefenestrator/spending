@@ -20,6 +20,10 @@ def create_app(db_path: str | None = None) -> Flask:
     with engine.connect() as conn:
         seed_categories(conn, "configs/categories.yaml")
 
+    @app.template_filter("money")
+    def money_filter(value, decimals=2):
+        return f"{float(value):,.{decimals}f}"
+
     from web.routes import register_blueprints
 
     register_blueprints(app)

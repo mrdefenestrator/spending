@@ -21,9 +21,7 @@
         onclick="event.stopPropagation(); navigateToTransactions({{ ym[0] }}, {{ ym[1] }}, this.dataset.category)"
         data-category="{{ row.category }}">
         <span class="{{ 'text-white font-medium' if heat > 0.65 else 'text-gray-700' }} hover:underline">
-            {% if val|abs >= 1000 %}${{ '%.1f'|format(val|abs / 1000) }}k
-            {% else %}${{ '%.0f'|format(val|abs) }}
-            {% endif %}
+            ${{ val|abs|money(0) }}
         </span>
     </td>
     {% else %}
@@ -58,11 +56,11 @@
         <span class="text-gray-400">→ flat</span>
         {% elif slope > 0 %}
         <span class="{{ 'text-red-500' if is_expense else 'text-green-500' }}">
-            ↗ {% if abs_slope >= 1000 %}${{ '%.1f'|format(abs_slope / 1000) }}k{% else %}${{ '%.0f'|format(abs_slope) }}{% endif %}/mo
+            ↗ ${{ abs_slope|money(0) }}/mo
         </span>
         {% else %}
         <span class="{{ 'text-green-500' if is_expense else 'text-red-500' }}">
-            ↘ {% if abs_slope >= 1000 %}${{ '%.1f'|format(abs_slope / 1000) }}k{% else %}${{ '%.0f'|format(abs_slope) }}{% endif %}/mo
+            ↘ ${{ abs_slope|money(0) }}/mo
         </span>
         {% endif %}
     {% else %}
@@ -94,7 +92,7 @@
             </td>
             {{ month_cells(row) }}
             <td class="px-4 py-2.5 text-right tabular-nums text-gray-500">
-                ${{ '%.0f'|format(row.monthly_avg|abs) }}
+                ${{ row.monthly_avg|abs|money(0) }}
             </td>
             {{ change_cell(row.pct_change, row.total < 0) }}
             {{ trend_cell(row.trend_slope, row.total < 0) }}
@@ -112,13 +110,12 @@
             {% for val in monthly_footer_values %}
             <td class="px-3 py-3 text-right tabular-nums {{ 'text-red-600' if val < 0 else 'text-green-600' if val > 0 else 'text-gray-300' }}">
                 {% if val == 0 %}—
-                {% elif val|abs >= 1000 %}${{ '%.1f'|format(val|abs / 1000) }}k
-                {% else %}${{ '%.0f'|format(val|abs) }}
+                {% else %}${{ val|abs|money(0) }}
                 {% endif %}
             </td>
             {% endfor %}
             <td class="px-4 py-3 text-right tabular-nums {{ 'text-red-600' if grand_total < 0 else 'text-green-600' }}">
-                ${{ '%.0f'|format(grand_total|abs / num_months) }}
+                ${{ (grand_total|abs / num_months)|money(0) }}
             </td>
             {{ change_cell(footer_pct_change, grand_total < 0, "px-4 py-3") }}
             {{ trend_cell(footer_trend_slope, grand_total < 0, "px-4 py-3") }}
@@ -138,7 +135,7 @@
             </td>
             {{ month_cells(row) }}
             <td class="px-4 py-2.5 text-right tabular-nums text-gray-500">
-                ${{ '%.0f'|format(row.monthly_avg|abs) }}
+                ${{ row.monthly_avg|abs|money(0) }}
             </td>
             {{ change_cell(row.pct_change, row.total < 0) }}
             {{ trend_cell(row.trend_slope, row.total < 0) }}
