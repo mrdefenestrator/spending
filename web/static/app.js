@@ -121,7 +121,7 @@ function toggleTrendDetail(rowId, category, period) {
 
 document.addEventListener('htmx:configRequest', function(e) {
     const path = e.detail.path;
-    if (path !== '/monthly' && path !== '/transactions') return;
+    if (path !== '/transactions') return;
     const state = document.getElementById('month-state');
     if (!state) return;
     if (!e.detail.parameters.year) e.detail.parameters.year = state.dataset.year;

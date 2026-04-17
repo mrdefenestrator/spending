@@ -48,26 +48,6 @@
 </td>
 {% endmacro %}
 
-{% macro trend_cell(slope, is_expense, cell_class="px-4 py-2.5") %}
-<td class="{{ cell_class }} text-right tabular-nums whitespace-nowrap">
-    {% if slope is not none %}
-        {% set abs_slope = slope|abs %}
-        {% if abs_slope < 3 %}
-        <span class="text-gray-400">→ flat</span>
-        {% elif slope > 0 %}
-        <span class="{{ 'text-red-500' if is_expense else 'text-green-500' }}">
-            ↗ ${{ abs_slope|money(0) }}/mo
-        </span>
-        {% else %}
-        <span class="{{ 'text-green-500' if is_expense else 'text-red-500' }}">
-            ↘ ${{ abs_slope|money(0) }}/mo
-        </span>
-        {% endif %}
-    {% else %}
-    <span class="text-gray-300">—</span>
-    {% endif %}
-</td>
-{% endmacro %}
 
 <div class="overflow-x-auto">
 <table class="w-full bg-white rounded-lg shadow-sm text-sm">
@@ -79,7 +59,6 @@
             {% endfor %}
             <th class="px-4 py-3 text-right">Avg/mo</th>
             <th class="px-4 py-3 text-right">Change</th>
-            <th class="px-4 py-3 text-right">Trend</th>
         </tr>
     </thead>
     <tbody>
@@ -95,10 +74,9 @@
                 ${{ row.monthly_avg|abs|money(0) }}
             </td>
             {{ change_cell(row.pct_change, row.total < 0) }}
-            {{ trend_cell(row.trend_slope, row.total < 0) }}
         </tr>
         <tr id="trend-detail-{{ loop.index }}" class="hidden">
-            <td colspan="{{ month_labels|length + 4 }}" class="p-0 bg-gray-50 border-b">
+            <td colspan="{{ month_labels|length + 3 }}" class="p-0 bg-gray-50 border-b">
                 <div class="p-4 text-xs text-gray-400 italic">Loading...</div>
             </td>
         </tr>
@@ -118,11 +96,10 @@
                 ${{ (grand_total|abs / num_months)|money(0) }}
             </td>
             {{ change_cell(footer_pct_change, grand_total < 0, "px-4 py-3") }}
-            {{ trend_cell(footer_trend_slope, grand_total < 0, "px-4 py-3") }}
         </tr>
         {% if trends_excluded %}
         <tr>
-            <td colspan="{{ month_labels|length + 4 }}" class="px-4 pt-5 pb-1 text-xs text-gray-400 uppercase tracking-wide">
+            <td colspan="{{ month_labels|length + 3 }}" class="px-4 pt-5 pb-1 text-xs text-gray-400 uppercase tracking-wide">
                 Not included in total
             </td>
         </tr>
@@ -138,10 +115,9 @@
                 ${{ row.monthly_avg|abs|money(0) }}
             </td>
             {{ change_cell(row.pct_change, row.total < 0) }}
-            {{ trend_cell(row.trend_slope, row.total < 0) }}
         </tr>
         <tr id="trend-detail-ex{{ loop.index }}" class="hidden">
-            <td colspan="{{ month_labels|length + 4 }}" class="p-0 bg-gray-50 border-b">
+            <td colspan="{{ month_labels|length + 3 }}" class="p-0 bg-gray-50 border-b">
                 <div class="p-4 text-xs text-gray-400 italic">Loading...</div>
             </td>
         </tr>

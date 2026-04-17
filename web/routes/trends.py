@@ -1,7 +1,7 @@
 from datetime import date
 from collections import defaultdict
 
-from flask import Blueprint, current_app, render_template, request
+from flask import Blueprint, current_app, redirect, render_template, request, url_for
 
 from spending.repository.aggregations import get_monthly_totals_range
 
@@ -27,6 +27,11 @@ def _period_range(period: str, today: date) -> tuple[date, date]:
         return date(today.year, 1, 1), today
 
 
+@bp.route("/")
+def root():
+    return redirect(url_for("trends.index"))
+
+
 @bp.route("/trends")
 def index():
     today = date.today()
@@ -46,7 +51,7 @@ def index():
         by_category[row["category"]]["months"][key] = float(row["total"])
 
     sorted_months = sorted(all_months)
-    num_months = max(len(sorted_months), 1)
+    num_months = max((end.year - start.year) * 12 + end.month - start.month + 1, 1)
     month_labels = [date(y, m, 1).strftime("%b") for y, m in sorted_months]
 
     trends = []
@@ -59,24 +64,12 @@ def index():
 
         monthly_avg = data["total"] / num_months
 
-        # Change: last non-zero month vs period average
-        last_nonzero = next((v for v in reversed(monthly_values) if v != 0), None)
-        if last_nonzero is not None and monthly_avg != 0:
-            pct_change = (abs(last_nonzero) - abs(monthly_avg)) / abs(monthly_avg) * 100
+        # Change: last month in period vs period average (empty months count as 0)
+        last_val = monthly_values[-1] if monthly_values else None
+        if last_val is not None and monthly_avg != 0:
+            pct_change = (abs(last_val) - abs(monthly_avg)) / abs(monthly_avg) * 100
         else:
             pct_change = None
-
-        # Trend: linear regression slope over all months ($/mo)
-        n = len(abs_values)
-        if n >= 2:
-            xs = list(range(n))
-            x_mean = sum(xs) / n
-            y_mean = sum(abs_values) / n
-            num = sum((xs[i] - x_mean) * (abs_values[i] - y_mean) for i in range(n))
-            den = sum((xs[i] - x_mean) ** 2 for i in range(n))
-            trend_slope = num / den if den != 0 else 0.0
-        else:
-            trend_slope = None
 
         trends.append(
             {
@@ -86,7 +79,6 @@ def index():
                 "monthly_values": monthly_values,
                 "monthly_heat": heat,
                 "pct_change": pct_change,
-                "trend_slope": trend_slope,
             }
         )
 
@@ -102,25 +94,13 @@ def index():
     monthly_footer_values = [monthly_footer.get(m, 0) for m in sorted_months]
 
     footer_avg = grand_total / num_months
-    last_nonzero_footer = next((v for v in reversed(monthly_footer_values) if v != 0), None)
-    if last_nonzero_footer is not None and footer_avg != 0:
+    last_val_footer = monthly_footer_values[-1] if monthly_footer_values else None
+    if last_val_footer is not None and footer_avg != 0:
         footer_pct_change: float | None = (
-            (abs(last_nonzero_footer) - abs(footer_avg)) / abs(footer_avg) * 100
+            (abs(last_val_footer) - abs(footer_avg)) / abs(footer_avg) * 100
         )
     else:
         footer_pct_change = None
-
-    footer_abs = [abs(v) for v in monthly_footer_values]
-    n = len(footer_abs)
-    if n >= 2:
-        xs = list(range(n))
-        x_mean = sum(xs) / n
-        y_mean = sum(footer_abs) / n
-        num = sum((xs[i] - x_mean) * (footer_abs[i] - y_mean) for i in range(n))
-        den = sum((xs[i] - x_mean) ** 2 for i in range(n))
-        footer_trend_slope: float | None = num / den if den != 0 else 0.0
-    else:
-        footer_trend_slope = None
 
     template = (
         "partials/trends_table.html"
@@ -139,7 +119,6 @@ def index():
         monthly_footer_values=monthly_footer_values,
         num_months=num_months,
         footer_pct_change=footer_pct_change,
-        footer_trend_slope=footer_trend_slope,
     )
 
 
