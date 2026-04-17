@@ -1,8 +1,11 @@
 from datetime import date
 
 from flask import Blueprint, Response, current_app, render_template, request
+from sqlalchemy import select
 
+from spending.models import transactions as txn_table
 from spending.repository.accounts import list_accounts
+from spending.repository.aggregations import base_transaction_query
 from spending.repository.categories import get_category_names
 from spending.repository.corrections import apply_transaction_correction
 from spending.repository.merchants import set_merchant_category
@@ -74,14 +77,10 @@ def index():
 
 @bp.route("/transactions/<int:txn_id>/edit-category", methods=["GET"])
 def edit_category_form(txn_id):
-    from spending.repository.aggregations import _base_query
-    from spending.models import transactions as txn_table
-    from sqlalchemy import select
-
     engine = current_app.config["engine"]
     with engine.connect() as conn:
         categories = get_category_names(conn)
-        subq = _base_query().where(txn_table.c.id == txn_id).subquery()
+        subq = base_transaction_query().where(txn_table.c.id == txn_id).subquery()
         row = conn.execute(select(subq)).fetchone()
     current_category = dict(row._mapping)["category"] if row else None
     return render_template(
@@ -94,13 +93,9 @@ def edit_category_form(txn_id):
 
 @bp.route("/transactions/<int:txn_id>/row")
 def row(txn_id):
-    from spending.repository.aggregations import _base_query
-    from spending.models import transactions as txn_table
-    from sqlalchemy import select
-
     engine = current_app.config["engine"]
     with engine.connect() as conn:
-        subq = _base_query().where(txn_table.c.id == txn_id).subquery()
+        subq = base_transaction_query().where(txn_table.c.id == txn_id).subquery()
         result = conn.execute(select(subq)).fetchone()
     if not result:
         return "", 404
@@ -115,9 +110,6 @@ def update_category(txn_id):
     engine = current_app.config["engine"]
     with engine.connect() as conn:
         if apply_to_merchant:
-            from spending.models import transactions as txn_table
-            from sqlalchemy import select
-
             row = conn.execute(
                 select(txn_table.c.normalized_merchant).where(txn_table.c.id == txn_id)
             ).fetchone()
@@ -129,11 +121,7 @@ def update_category(txn_id):
         else:
             apply_transaction_correction(conn, txn_id, category=category)
 
-        from spending.repository.aggregations import _base_query
-        from spending.models import transactions as txn_table
-        from sqlalchemy import select
-
-        subq = _base_query().where(txn_table.c.id == txn_id).subquery()
+        subq = base_transaction_query().where(txn_table.c.id == txn_id).subquery()
         updated = conn.execute(select(subq)).fetchone()
 
     if not updated:

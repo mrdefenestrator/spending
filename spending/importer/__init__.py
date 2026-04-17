@@ -15,6 +15,17 @@ from spending.repository.imports import (
 )
 
 
+def _error(msg: str) -> dict:
+    return {
+        "import_id": None,
+        "new_count": 0,
+        "skipped_count": 0,
+        "flagged_count": 0,
+        "new_merchants": [],
+        "error": msg,
+    }
+
+
 def run_import(
     conn: Connection,
     file_path: str | Path,
@@ -28,53 +39,23 @@ def run_import(
     """
     file_path = Path(file_path)
 
-    # Check for exact re-import
     file_hash = compute_file_hash(file_path)
     if check_file_hash(conn, file_hash):
-        return {
-            "import_id": None,
-            "new_count": 0,
-            "skipped_count": 0,
-            "flagged_count": 0,
-            "new_merchants": [],
-            "error": f"File already imported: {file_path.name}",
-        }
+        return _error(f"File already imported: {file_path.name}")
 
-    # Parse based on format
     suffix = file_path.suffix.lower()
     if suffix in (".ofx", ".qfx"):
         result = parse_ofx(file_path)
     elif suffix == ".csv":
         config_path = detect_institution_config(file_path, configs_dir)
         if config_path is None:
-            return {
-                "import_id": None,
-                "new_count": 0,
-                "skipped_count": 0,
-                "flagged_count": 0,
-                "new_merchants": [],
-                "error": f"No institution config matches: {file_path.name}",
-            }
+            return _error(f"No institution config matches: {file_path.name}")
         result = parse_csv(file_path, config_path)
     else:
-        return {
-            "import_id": None,
-            "new_count": 0,
-            "skipped_count": 0,
-            "flagged_count": 0,
-            "new_merchants": [],
-            "error": f"Unsupported format: {suffix}",
-        }
+        return _error(f"Unsupported format: {suffix}")
 
     if not result["transactions"]:
-        return {
-            "import_id": None,
-            "new_count": 0,
-            "skipped_count": 0,
-            "flagged_count": 0,
-            "new_merchants": [],
-            "error": "No transactions found in file",
-        }
+        return _error("No transactions found in file")
 
     # Normalize merchant names
     for txn in result["transactions"]:

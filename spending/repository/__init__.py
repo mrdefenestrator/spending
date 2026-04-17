@@ -1,4 +1,5 @@
 from spending.repository.aggregations import (
+    base_transaction_query,
     get_monthly_category_totals,
     get_monthly_totals_range,
     get_rolling_average,
@@ -31,6 +32,8 @@ from spending.repository.imports import (
 )
 from spending.repository.merchants import (
     get_cached_category,
+    get_merchant_by_id,
+    get_merchant_with_stats_by_id,
     get_uncached_merchants,
     list_merchants,
     list_merchants_with_stats,
@@ -59,12 +62,15 @@ __all__ = [
     "edit_category",
     "get_cached_category",
     "get_category_names",
+    "get_merchant_by_id",
+    "get_merchant_with_stats_by_id",
     "get_uncached_merchants",
     "list_categories",
     "list_merchants",
     "list_merchants_with_stats",
     "seed_categories",
     "set_merchant_category",
+    "base_transaction_query",
     "get_monthly_category_totals",
     "get_monthly_totals_range",
     "get_rolling_average",

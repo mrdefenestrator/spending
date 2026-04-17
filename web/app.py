@@ -1,9 +1,8 @@
 import os
 
 from flask import Flask
-from sqlalchemy import create_engine
 
-from spending.models import metadata
+from spending.db import get_engine, init_db
 from spending.repository.categories import seed_categories
 
 
@@ -13,8 +12,8 @@ def create_app(db_path: str | None = None) -> Flask:
     if db_path is None:
         db_path = os.environ.get("SPENDING_DB", "spending.db")
 
-    engine = create_engine(f"sqlite:///{db_path}")
-    metadata.create_all(engine)
+    engine = get_engine(db_path)
+    init_db(engine)
     app.config["engine"] = engine
 
     with engine.connect() as conn:

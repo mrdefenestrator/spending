@@ -1,33 +1,12 @@
-{% macro sort_th(col, label, first_dir="asc", extra_class="", is_default=False) %}
-  {% set active = (sort == col) or (not sort and is_default) %}
-  {% set active_dir = dir if sort else ("asc" if is_default else "") %}
-  {% if active %}
-    {% if active_dir == first_dir %}
-      {% set next_url = "/merchants?sort=" ~ col ~ "&dir=" ~ ("desc" if first_dir == "asc" else "asc") %}
-    {% else %}
-      {% set next_url = "/merchants?sort=&dir=" %}
-    {% endif %}
-  {% else %}
-    {% set next_url = "/merchants?sort=" ~ col ~ "&dir=" ~ first_dir %}
-  {% endif %}
-  <th class="px-4 py-3 cursor-pointer select-none whitespace-nowrap group hover:bg-gray-50 dark:hover:bg-gray-700 {{ extra_class }}"
-      hx-get="{{ next_url }}" hx-target="#content" hx-include="[name]" hx-push-url="true">
-    {{- label -}}
-    {% if active %}
-      <span class="ml-1 text-xs">{{ "↑" if active_dir == "asc" else "↓" }}</span>
-    {% else %}
-      <span class="ml-1 text-xs text-gray-300 opacity-0 group-hover:opacity-100">↕</span>
-    {% endif %}
-  </th>
-{% endmacro %}
+{% from "partials/macros.html" import sort_th with context %}
 <table class="w-full bg-white dark:bg-gray-800 rounded-lg shadow-sm">
     <thead>
         <tr class="border-b dark:border-gray-700 text-left text-sm text-gray-500 dark:text-gray-400">
-            {{ sort_th("merchant", "Merchant", is_default=True) }}
-            {{ sort_th("category", "Category") }}
-            {{ sort_th("source", "Source") }}
-            {{ sort_th("txn_count", "Transactions", first_dir="desc", extra_class="text-right") }}
-            {{ sort_th("last_seen", "Last Seen", first_dir="desc") }}
+            {{ sort_th("/merchants", "merchant", "Merchant", is_default=True) }}
+            {{ sort_th("/merchants", "category", "Category") }}
+            {{ sort_th("/merchants", "source", "Source") }}
+            {{ sort_th("/merchants", "txn_count", "Transactions", first_dir="desc", extra_class="text-right") }}
+            {{ sort_th("/merchants", "last_seen", "Last Seen", first_dir="desc") }}
             <th class="px-4 py-3 w-10"></th>
         </tr>
     </thead>

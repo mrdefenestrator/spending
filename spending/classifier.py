@@ -2,6 +2,7 @@ import json
 import logging
 
 from anthropic import Anthropic
+from sqlalchemy import Connection
 
 logger = logging.getLogger(__name__)
 
@@ -57,3 +58,21 @@ def classify_merchants(
     except Exception:
         logger.exception("Classification API call failed")
         return {}
+
+
+def classify_and_cache(conn: Connection, merchant_names: list[str]) -> int:
+    """Classify uncached merchants via API and store results. Returns count classified."""
+    from spending.repository.categories import get_category_names
+    from spending.repository.merchants import (
+        get_uncached_merchants,
+        set_merchant_category,
+    )
+
+    uncached = get_uncached_merchants(conn, merchant_names)
+    if not uncached:
+        return 0
+    category_names = get_category_names(conn)
+    classifications = classify_merchants(uncached, category_names)
+    for name, category in classifications.items():
+        set_merchant_category(conn, name, category, source="api")
+    return len(classifications)

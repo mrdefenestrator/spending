@@ -2,6 +2,7 @@ from flask import Blueprint, current_app, render_template, request
 
 from spending.repository.categories import get_category_names
 from spending.repository.merchants import (
+    get_merchant_with_stats_by_id,
     list_merchants_with_stats,
     set_merchant_category,
 )
@@ -70,8 +71,7 @@ def edit_form(merchant_id):
     engine = current_app.config["engine"]
     with engine.connect() as conn:
         categories = get_category_names(conn)
-        merchants = list_merchants_with_stats(conn)
-    merchant = next((m for m in merchants if m["id"] == merchant_id), None)
+        merchant = get_merchant_with_stats_by_id(conn, merchant_id)
     if not merchant:
         return "", 404
     return render_template(
@@ -83,8 +83,7 @@ def edit_form(merchant_id):
 def row(merchant_id):
     engine = current_app.config["engine"]
     with engine.connect() as conn:
-        merchants = list_merchants_with_stats(conn)
-    merchant = next((m for m in merchants if m["id"] == merchant_id), None)
+        merchant = get_merchant_with_stats_by_id(conn, merchant_id)
     if not merchant:
         return "", 404
     return render_template("partials/merchant_row.html", m=merchant)
@@ -98,8 +97,7 @@ def update_category(merchant_id):
     engine = current_app.config["engine"]
     with engine.connect() as conn:
         set_merchant_category(conn, merchant_name, category, source="manual")
-        merchants = list_merchants_with_stats(conn)
-    merchant = next((m for m in merchants if m["id"] == merchant_id), None)
+        merchant = get_merchant_with_stats_by_id(conn, merchant_id)
     if not merchant:
         return "", 404
     return render_template("partials/merchant_row.html", m=merchant)

@@ -63,7 +63,7 @@ def test_import_ofx(tmp_path, sample_ofx):
         ],
     )
 
-    with patch("spending.cli.classify_merchants", return_value={}):
+    with patch("spending.cli.classify_and_cache", return_value=0):
         result = runner.invoke(
             cli,
             [

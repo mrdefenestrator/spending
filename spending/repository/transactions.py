@@ -3,7 +3,7 @@ from datetime import date
 
 from sqlalchemy import Connection, func, select
 
-from spending.repository.aggregations import _base_query
+from spending.repository.aggregations import base_transaction_query
 
 
 def get_transactions(
@@ -25,7 +25,7 @@ def get_transactions(
     """
     from spending.models import transactions
 
-    subq = _base_query()
+    subq = base_transaction_query()
 
     if year and month:
         start = date(year, month, 1)

@@ -1,7 +1,12 @@
 from flask import Blueprint, current_app, render_template, request
 from sqlalchemy.exc import IntegrityError
 
-from spending.repository.accounts import add_account, edit_account, list_accounts
+from spending.repository.accounts import (
+    add_account,
+    edit_account,
+    get_account_by_id,
+    list_accounts,
+)
 
 VALID_ACCOUNT_TYPES = {"checking", "savings", "credit_card", "other"}
 
@@ -43,8 +48,7 @@ def index():
 def edit_form(account_id):
     engine = current_app.config["engine"]
     with engine.connect() as conn:
-        accts = list_accounts(conn)
-    acct = next((a for a in accts if a["id"] == account_id), None)
+        acct = get_account_by_id(conn, account_id)
     return render_template("partials/account_edit_row.html", account=acct)
 
 
@@ -52,8 +56,7 @@ def edit_form(account_id):
 def row(account_id):
     engine = current_app.config["engine"]
     with engine.connect() as conn:
-        accts = list_accounts(conn)
-    acct = next((a for a in accts if a["id"] == account_id), None)
+        acct = get_account_by_id(conn, account_id)
     if not acct:
         return "", 404
     return render_template("partials/account_row.html", a=acct)
@@ -77,8 +80,7 @@ def update(account_id):
                 institution=institution,
                 account_type=account_type,
             )
-        accts = list_accounts(conn)
-    acct = next((a for a in accts if a["id"] == account_id), None)
+        acct = get_account_by_id(conn, account_id)
     if not acct:
         return "", 404
     return render_template("partials/account_row.html", a=acct)

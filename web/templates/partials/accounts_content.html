@@ -1,25 +1,4 @@
-{% macro sort_th(col, label, first_dir="asc", extra_class="", is_default=False) %}
-  {% set active = (sort == col) or (not sort and is_default) %}
-  {% set active_dir = dir if sort else ("asc" if is_default else "") %}
-  {% if active %}
-    {% if active_dir == first_dir %}
-      {% set next_url = "/accounts?sort=" ~ col ~ "&dir=" ~ ("desc" if first_dir == "asc" else "asc") %}
-    {% else %}
-      {% set next_url = "/accounts?sort=&dir=" %}
-    {% endif %}
-  {% else %}
-    {% set next_url = "/accounts?sort=" ~ col ~ "&dir=" ~ first_dir %}
-  {% endif %}
-  <th class="px-4 py-3 cursor-pointer select-none whitespace-nowrap group hover:bg-gray-50 dark:hover:bg-gray-700 {{ extra_class }}"
-      hx-get="{{ next_url }}" hx-target="#content" hx-include="[name]" hx-push-url="true">
-    {{- label -}}
-    {% if active %}
-      <span class="ml-1 text-xs">{{ "↑" if active_dir == "asc" else "↓" }}</span>
-    {% else %}
-      <span class="ml-1 text-xs text-gray-300 opacity-0 group-hover:opacity-100">↕</span>
-    {% endif %}
-  </th>
-{% endmacro %}
+{% from "partials/macros.html" import sort_th with context %}
 <h2 class="text-lg font-semibold mb-4 dark:text-gray-100">Accounts</h2>
 <input type="hidden" name="sort" value="{{ sort or '' }}">
 <input type="hidden" name="dir" value="{{ dir or '' }}">
@@ -27,10 +6,10 @@
 <table class="w-full bg-white dark:bg-gray-800 rounded-lg shadow-sm">
     <thead>
         <tr class="border-b dark:border-gray-700 text-left text-sm text-gray-500 dark:text-gray-400">
-            {{ sort_th("name", "Name", is_default=True) }}
-            {{ sort_th("institution", "Institution") }}
-            {{ sort_th("type", "Type") }}
-            {{ sort_th("created", "Created", first_dir="desc", extra_class="text-gray-400 text-xs font-normal") }}
+            {{ sort_th("/accounts", "name", "Name", is_default=True) }}
+            {{ sort_th("/accounts", "institution", "Institution") }}
+            {{ sort_th("/accounts", "type", "Type") }}
+            {{ sort_th("/accounts", "created", "Created", first_dir="desc", extra_class="text-gray-400 text-xs font-normal") }}
             <th class="px-4 py-3 w-10"></th>
         </tr>
     </thead>

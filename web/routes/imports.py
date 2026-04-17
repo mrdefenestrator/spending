@@ -4,18 +4,16 @@ from pathlib import Path
 
 from flask import Blueprint, current_app, render_template, request
 
-from spending.classifier import classify_merchants
+from spending.classifier import classify_and_cache
 from spending.importer import run_import
 from spending.importer.ofx import extract_ofx_metadata
 from spending.repository.accounts import list_accounts
-from spending.repository.categories import get_category_names
 from spending.repository.imports import (
     confirm_import,
     get_staging_imports,
     get_staging_transactions,
     reject_import,
 )
-from spending.repository.merchants import get_uncached_merchants, set_merchant_category
 
 bp = Blueprint("imports", __name__)
 
@@ -69,12 +67,7 @@ def upload():
 
         # Classify new merchants
         if all_new_merchants:
-            uncached = get_uncached_merchants(conn, list(all_new_merchants))
-            if uncached:
-                category_names = get_category_names(conn)
-                classifications = classify_merchants(uncached, category_names)
-                for name, category in classifications.items():
-                    set_merchant_category(conn, name, category, source="api")
+            classify_and_cache(conn, list(all_new_merchants))
 
         # Re-fetch staging imports
         staging = get_staging_imports(conn)

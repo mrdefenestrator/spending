@@ -2,11 +2,10 @@ from datetime import date as date_type
 from pathlib import Path
 
 import click
-from sqlalchemy import create_engine
 
-from spending.classifier import classify_merchants
+from spending.classifier import classify_and_cache
+from spending.db import get_engine, init_db
 from spending.importer import run_import
-from spending.models import metadata
 from spending.repository.accounts import (
     add_account,
     delete_account,
@@ -20,12 +19,10 @@ from spending.repository.categories import (
     add_category,
     delete_category,
     edit_category,
-    get_category_names,
     list_categories,
     seed_categories,
 )
 from spending.repository.imports import get_staging_imports
-from spending.repository.merchants import get_uncached_merchants, set_merchant_category
 
 
 @click.group()
@@ -34,8 +31,8 @@ from spending.repository.merchants import get_uncached_merchants, set_merchant_c
 def cli(ctx, db):
     """Spending tracker CLI."""
     ctx.ensure_object(dict)
-    engine = create_engine(f"sqlite:///{db}")
-    metadata.create_all(engine)
+    engine = get_engine(db)
+    init_db(engine)
     ctx.obj["engine"] = engine
     ctx.call_on_close(engine.dispose)
     with engine.connect() as conn:
@@ -212,16 +209,9 @@ def import_cmd(ctx, files, account):
 
         # Classify new merchants
         if all_new_merchants:
-            uncached = get_uncached_merchants(conn, list(all_new_merchants))
-            if uncached:
-                click.echo(f"Classifying {len(uncached)} new merchants...")
-                category_names = get_category_names(conn)
-                classifications = classify_merchants(uncached, category_names)
-                for name, category in classifications.items():
-                    set_merchant_category(conn, name, category, source="api")
-                unclassified = len(uncached) - len(classifications)
-                if unclassified:
-                    click.echo(f"  {unclassified} merchants could not be classified")
+            classified = classify_and_cache(conn, list(all_new_merchants))
+            if classified:
+                click.echo(f"Classified {classified} new merchants.")
 
         click.echo("Done. Review staged imports in the web UI.")
 

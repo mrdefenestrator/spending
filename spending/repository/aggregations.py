@@ -15,7 +15,6 @@ from spending.models import (
 
 
 def _resolved_category():
-    """SQL expression for the resolved category."""
     return coalesce(
         transaction_corrections.c.category,
         merchant_cache.c.category,
@@ -24,14 +23,13 @@ def _resolved_category():
 
 
 def _resolved_merchant():
-    """SQL expression for the resolved merchant name."""
     return coalesce(
         transaction_corrections.c.merchant_name,
         transactions.c.normalized_merchant,
     ).label("merchant")
 
 
-def _base_query():
+def base_transaction_query():
     """Base query joining transactions with corrections and merchant cache.
 
     Only includes confirmed imports.
@@ -77,7 +75,7 @@ def get_monthly_category_totals(
     end = date(year, month, last_day)
 
     subq = (
-        _base_query()
+        base_transaction_query()
         .where(
             transactions.c.date >= start,
             transactions.c.date <= end,
@@ -104,7 +102,7 @@ def get_monthly_totals_range(
 ) -> list[dict]:
     """Get category totals per month for a date range."""
     subq = (
-        _base_query()
+        base_transaction_query()
         .where(
             transactions.c.date >= start_date,
             transactions.c.date <= end_date,
@@ -148,7 +146,7 @@ def get_rolling_average(
     start = date(start_year, start_month, 1)
 
     subq = (
-        _base_query()
+        base_transaction_query()
         .where(
             transactions.c.date >= start,
             transactions.c.date < date(year, month, 1),
