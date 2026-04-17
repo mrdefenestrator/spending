@@ -116,7 +116,8 @@ document.addEventListener('DOMContentLoaded', function () {
 document.addEventListener('htmx:afterSettle', initDropzone);
 
 function navigateToTransactions(year, month, category) {
-    window.location.href = '/transactions?year=' + year + '&month=' + month + '&category=' + encodeURIComponent(category);
+    const url = '/transactions?year=' + year + '&month=' + month + '&category=' + encodeURIComponent(category);
+    htmx.ajax('GET', url, { target: '#content', swap: 'innerHTML', pushUrl: true });
 }
 
 function toggleTrendDetail(rowId, category, period) {

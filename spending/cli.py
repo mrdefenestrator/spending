@@ -209,8 +209,10 @@ def import_cmd(ctx, files, account):
 
         # Classify new merchants
         if all_new_merchants:
-            classified = classify_and_cache(conn, list(all_new_merchants))
-            if classified:
+            classified, warn = classify_and_cache(conn, list(all_new_merchants))
+            if warn:
+                click.echo(f"Warning: {warn}", err=True)
+            elif classified:
                 click.echo(f"Classified {classified} new merchants.")
 
         click.echo("Done. Review staged imports in the web UI.")

@@ -9,9 +9,9 @@
                 <option value="{{ c }}" {{ 'selected' if current_category == c }}>{{ c }}</option>
                 {% endfor %}
             </select>
-            <label class="flex items-center gap-1 text-sm dark:text-gray-300">
-                <input type="checkbox" name="apply_to_merchant">
-                Apply to all from this merchant
+            <label class="flex items-center gap-1.5 text-sm dark:text-gray-300 cursor-pointer">
+                <input type="checkbox" name="apply_to_merchant" checked>
+                Also apply to all from this merchant
             </label>
             <button type="submit" class="bg-blue-500 hover:bg-blue-600 text-white px-3 py-1 rounded text-sm">Save</button>
             <button type="button" class="text-gray-500 dark:text-gray-400 text-sm"

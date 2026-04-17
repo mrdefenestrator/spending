@@ -55,19 +55,25 @@ def upload():
         for f in files:
             if not f.filename:
                 continue
-            # Save to temp file
             suffix = Path(f.filename).suffix
-            with tempfile.NamedTemporaryFile(delete=False, suffix=suffix) as tmp:
-                f.save(tmp.name)
-                result = run_import(conn, tmp.name, account_id)
-                result["filename"] = f.filename
-                results.append(result)
-                if not result.get("error"):
-                    all_new_merchants.update(result.get("new_merchants", []))
+            tmp_path = None
+            try:
+                with tempfile.NamedTemporaryFile(delete=False, suffix=suffix) as tmp:
+                    tmp_path = tmp.name
+                    f.save(tmp_path)
+                result = run_import(conn, tmp_path, account_id)
+            finally:
+                if tmp_path:
+                    os.unlink(tmp_path)
+            result["filename"] = f.filename
+            results.append(result)
+            if not result.get("error"):
+                all_new_merchants.update(result.get("new_merchants", []))
 
         # Classify new merchants
+        classify_warning = None
         if all_new_merchants:
-            classify_and_cache(conn, list(all_new_merchants))
+            _, classify_warning = classify_and_cache(conn, list(all_new_merchants))
 
         # Re-fetch staging imports
         staging = get_staging_imports(conn)
@@ -84,6 +90,7 @@ def upload():
         staging=staging,
         accounts=accounts,
         results=results,
+        classify_warning=classify_warning,
     )
 
 

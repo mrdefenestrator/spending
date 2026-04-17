@@ -1,7 +1,7 @@
 import hashlib
 from pathlib import Path
 
-from sqlalchemy import Connection, insert, select, update
+from sqlalchemy import Connection, func, insert, select, update
 from sqlalchemy.sql.functions import coalesce
 
 from spending.models import imports, merchant_cache, transactions
@@ -89,11 +89,15 @@ def get_staging_transactions(conn: Connection, import_id: int) -> list[dict]:
 
 
 def get_staging_imports(conn: Connection) -> list[dict]:
-    rows = conn.execute(
-        select(imports)
+    stmt = (
+        select(imports, func.count(transactions.c.id).label("txn_count"))
+        .select_from(imports)
+        .outerjoin(transactions, transactions.c.import_id == imports.c.id)
         .where(imports.c.status == "staging")
+        .group_by(imports.c.id)
         .order_by(imports.c.imported_at.desc())
-    ).fetchall()
+    )
+    rows = conn.execute(stmt).fetchall()
     return [dict(row._mapping) for row in rows]
 
 

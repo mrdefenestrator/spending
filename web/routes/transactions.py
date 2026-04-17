@@ -1,4 +1,5 @@
 from datetime import date
+from decimal import Decimal
 
 from flask import Blueprint, Response, current_app, render_template, request
 from sqlalchemy import select
@@ -43,6 +44,9 @@ def index():
         accounts = list_accounts(conn)
         categories = get_category_names(conn)
 
+    txn_count = len(txns)
+    txn_total = sum((t["amount"] for t in txns), Decimal("0"))
+
     prev_month = month - 1 if month > 1 else 12
     prev_year = year if month > 1 else year - 1
     next_month = month + 1 if month < 12 else 1
@@ -72,6 +76,8 @@ def index():
         all_months=all_months,
         sort=sort,
         dir=sort_dir,
+        txn_count=txn_count,
+        txn_total=txn_total,
     )
 
 
