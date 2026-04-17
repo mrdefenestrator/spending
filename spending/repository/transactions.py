@@ -16,6 +16,8 @@ def get_transactions(
     search: str | None = None,
     status: str | None = None,
     import_id: int | None = None,
+    sort: str | None = None,
+    sort_dir: str | None = None,
 ) -> list[dict]:
     """Get transactions with resolved category and merchant.
 
@@ -40,7 +42,7 @@ def get_transactions(
     if import_id:
         subq = subq.where(transactions.c.import_id == import_id)
 
-    subq = subq.order_by(transactions.c.date.desc()).subquery()
+    subq = subq.subquery()
 
     # Wrap in outer query to filter on resolved columns
     stmt = select(subq)
@@ -63,6 +65,20 @@ def get_transactions(
             subq.c.category != "Uncategorized",
             subq.c.correction_id.is_(None),
         )
+
+    _sort_cols = {
+        "merchant": subq.c.merchant,
+        "description": subq.c.raw_description,
+        "account": subq.c.account_name,
+        "category": subq.c.category,
+        "amount": subq.c.amount,
+    }
+    sort_col = _sort_cols.get(sort) if sort else None
+    if sort_col is not None:
+        order = sort_col.desc() if sort_dir == "desc" else sort_col.asc()
+        stmt = stmt.order_by(order, subq.c.date.desc())
+    else:
+        stmt = stmt.order_by(subq.c.date.desc())
 
     rows = conn.execute(stmt).fetchall()
     return [dict(row._mapping) for row in rows]

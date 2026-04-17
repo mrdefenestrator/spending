@@ -1,13 +1,35 @@
+{% macro sort_th(col, label, first_dir="asc", extra_class="") %}
+  {% if sort == col %}
+    {% if dir == first_dir %}
+      {% set next_url = "/transactions?sort=" ~ col ~ "&dir=" ~ ("desc" if first_dir == "asc" else "asc") %}
+    {% else %}
+      {% set next_url = "/transactions?sort=&dir=" %}
+    {% endif %}
+  {% else %}
+    {% set next_url = "/transactions?sort=" ~ col ~ "&dir=" ~ first_dir %}
+  {% endif %}
+  <th class="px-4 py-3 cursor-pointer select-none whitespace-nowrap group hover:bg-gray-50 {{ extra_class }}"
+      hx-get="{{ next_url }}" hx-target="#content" hx-include="[name]" hx-push-url="true">
+    {{- label -}}
+    {% if sort == col %}
+      <span class="ml-1 text-xs">{{ "↑" if dir == "asc" else "↓" }}</span>
+    {% else %}
+      <span class="ml-1 text-xs text-gray-300 opacity-0 group-hover:opacity-100">↕</span>
+    {% endif %}
+  </th>
+{% endmacro %}
 <table class="w-full bg-white rounded-lg shadow-sm">
     <thead>
         <tr class="border-b text-left text-sm text-gray-500">
             <th class="px-4 py-3 w-8"><input type="checkbox" id="select-all"></th>
-            <th class="px-4 py-3">Date</th>
-            <th class="px-4 py-3">Merchant</th>
-            <th class="px-4 py-3">Description</th>
-            <th class="px-4 py-3">Account</th>
-            <th class="px-4 py-3">Category</th>
-            <th class="px-4 py-3 text-right">Amount</th>
+            <th class="px-4 py-3 whitespace-nowrap">
+              Date{% if not sort %}<span class="ml-1 text-xs">↓</span>{% endif %}
+            </th>
+            {{ sort_th("merchant", "Merchant") }}
+            {{ sort_th("description", "Description") }}
+            {{ sort_th("account", "Account") }}
+            {{ sort_th("category", "Category") }}
+            {{ sort_th("amount", "Amount", first_dir="desc", extra_class="text-right") }}
         </tr>
     </thead>
     <tbody>

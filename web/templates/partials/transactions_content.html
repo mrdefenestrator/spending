@@ -37,6 +37,8 @@
         </label>
         <input type="hidden" name="year" value="{{ year }}">
         <input type="hidden" name="month" value="{{ month }}">
+        <input type="hidden" name="sort" value="{{ sort or '' }}">
+        <input type="hidden" name="dir" value="{{ dir or '' }}">
     </div>
     {% if not all_months %}
     <div class="flex items-center space-x-2">

@@ -21,6 +21,8 @@ def index():
     search = request.args.get("search")
     status = request.args.get("status")
     all_months = request.args.get("all_months") == "true"
+    sort = request.args.get("sort") or None
+    sort_dir = request.args.get("dir") or None
 
     engine = current_app.config["engine"]
     with engine.connect() as conn:
@@ -32,6 +34,8 @@ def index():
             account_id=account_id,
             search=search,
             status=status,
+            sort=sort,
+            sort_dir=sort_dir,
         )
         accounts = list_accounts(conn)
         categories = get_category_names(conn)
@@ -63,6 +67,8 @@ def index():
         search=search or "",
         selected_status=status,
         all_months=all_months,
+        sort=sort,
+        dir=sort_dir,
     )
 
 
