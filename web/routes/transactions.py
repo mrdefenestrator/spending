@@ -139,6 +139,8 @@ def update_category(txn_id):
     if not updated:
         return "", 404
 
-    row_html = render_template("partials/transaction_row.html", txn=dict(updated._mapping))
+    row_html = render_template(
+        "partials/transaction_row.html", txn=dict(updated._mapping)
+    )
     oob_delete = f'<tr id="edit-{txn_id}" hx-swap-oob="delete"></tr>'
     return Response(row_html + oob_delete, content_type="text/html")

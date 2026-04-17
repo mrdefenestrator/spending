@@ -17,9 +17,7 @@ bp = Blueprint("accounts", __name__)
 
 def _sort_accounts(accts: list, sort: str, sort_dir: str) -> list:
     if sort in _ACCOUNT_SORT_KEYS:
-        return sorted(
-            accts, key=_ACCOUNT_SORT_KEYS[sort], reverse=(sort_dir == "desc")
-        )
+        return sorted(accts, key=_ACCOUNT_SORT_KEYS[sort], reverse=(sort_dir == "desc"))
     return sorted(accts, key=lambda a: (a["name"] or "").lower())
 
 
