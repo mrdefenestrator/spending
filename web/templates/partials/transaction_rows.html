@@ -8,7 +8,7 @@
   {% else %}
     {% set next_url = "/transactions?sort=" ~ col ~ "&dir=" ~ first_dir %}
   {% endif %}
-  <th class="px-4 py-3 cursor-pointer select-none whitespace-nowrap group hover:bg-gray-50 {{ extra_class }}"
+  <th class="px-4 py-3 cursor-pointer select-none whitespace-nowrap group hover:bg-gray-50 dark:hover:bg-gray-700 {{ extra_class }}"
       hx-get="{{ next_url }}" hx-target="#content" hx-include="[name]" hx-push-url="true">
     {{- label -}}
     {% if sort == col %}
@@ -18,9 +18,9 @@
     {% endif %}
   </th>
 {% endmacro %}
-<table class="w-full bg-white rounded-lg shadow-sm">
+<table class="w-full bg-white dark:bg-gray-800 rounded-lg shadow-sm">
     <thead>
-        <tr class="border-b text-left text-sm text-gray-500">
+        <tr class="border-b dark:border-gray-700 text-left text-sm text-gray-500 dark:text-gray-400">
 <th class="px-4 py-3 whitespace-nowrap">
               Date{% if not sort %}<span class="ml-1 text-xs">↓</span>{% endif %}
             </th>

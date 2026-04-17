@@ -4,21 +4,21 @@
 <div class="mb-4 flex flex-wrap gap-2 items-center justify-between">
     <div class="flex flex-wrap gap-2 items-end">
         <select name="account_id" hx-get="/transactions" hx-target="#content" hx-include="[name]" hx-push-url="true"
-                class="border rounded px-2 py-1.5 text-sm">
+                class="border dark:border-gray-600 rounded px-2 py-1.5 text-sm bg-white dark:bg-gray-700 dark:text-gray-100">
             <option value="">All Accounts</option>
             {% for a in accounts %}
             <option value="{{ a.id }}" {{ 'selected' if selected_account == a.id }}>{{ a.name }}</option>
             {% endfor %}
         </select>
         <select name="category" hx-get="/transactions" hx-target="#content" hx-include="[name]" hx-push-url="true"
-                class="border rounded px-2 py-1.5 text-sm">
+                class="border dark:border-gray-600 rounded px-2 py-1.5 text-sm bg-white dark:bg-gray-700 dark:text-gray-100">
             <option value="">All Categories</option>
             {% for c in categories %}
             <option value="{{ c }}" {{ 'selected' if selected_category == c }}>{{ c }}</option>
             {% endfor %}
         </select>
         <select name="status" hx-get="/transactions" hx-target="#content" hx-include="[name]" hx-push-url="true"
-                class="border rounded px-2 py-1.5 text-sm">
+                class="border dark:border-gray-600 rounded px-2 py-1.5 text-sm bg-white dark:bg-gray-700 dark:text-gray-100">
             <option value="">All Status</option>
             <option value="categorized" {{ 'selected' if selected_status == 'categorized' }}>Categorized</option>
             <option value="uncategorized" {{ 'selected' if selected_status == 'uncategorized' }}>Uncategorized</option>
@@ -27,8 +27,8 @@
         <input type="search" name="search" value="{{ search }}" placeholder="Search..."
                hx-get="/transactions" hx-target="#content" hx-include="[name]" hx-push-url="true"
                hx-trigger="keyup changed delay:300ms"
-               class="border rounded px-2 py-1.5 text-sm">
-        <label class="flex items-center gap-1.5 text-sm text-gray-600 cursor-pointer select-none">
+               class="border dark:border-gray-600 rounded px-2 py-1.5 text-sm bg-white dark:bg-gray-700 dark:text-gray-100">
+        <label class="flex items-center gap-1.5 text-sm text-gray-600 dark:text-gray-300 cursor-pointer select-none">
             <input type="checkbox" name="all_months" value="true"
                    {{ 'checked' if all_months }}
                    hx-get="/transactions" hx-target="#content" hx-include="[name]" hx-push-url="true"
@@ -44,11 +44,11 @@
     <div class="flex items-center space-x-2">
         <a hx-get="/transactions?year={{ prev_year }}&month={{ prev_month }}{{ filter_qs }}"
            hx-target="#content" hx-push-url="true"
-           class="px-2 py-1 text-gray-600 hover:bg-gray-100 rounded cursor-pointer">&larr;</a>
-        <span class="text-sm font-medium text-gray-700">{{ '%02d/%d' | format(month, year) }}</span>
+           class="px-2 py-1 text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded cursor-pointer">&larr;</a>
+        <span class="text-sm font-medium text-gray-700 dark:text-gray-200">{{ '%02d/%d' | format(month, year) }}</span>
         <a hx-get="/transactions?year={{ next_year }}&month={{ next_month }}{{ filter_qs }}"
            hx-target="#content" hx-push-url="true"
-           class="px-2 py-1 text-gray-600 hover:bg-gray-100 rounded cursor-pointer">&rarr;</a>
+           class="px-2 py-1 text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded cursor-pointer">&rarr;</a>
     </div>
     {% endif %}
 </div>

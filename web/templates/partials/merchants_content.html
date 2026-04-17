@@ -2,16 +2,16 @@
     <input type="search" name="search" value="{{ search }}" placeholder="Search merchants..."
            hx-get="/merchants" hx-target="#content" hx-include="[name]"
            hx-trigger="keyup changed delay:300ms"
-           class="border rounded px-2 py-1.5 text-sm">
+           class="border dark:border-gray-600 rounded px-2 py-1.5 text-sm bg-white dark:bg-gray-700 dark:text-gray-100">
     <select name="category" hx-get="/merchants" hx-target="#content" hx-include="[name]"
-            class="border rounded px-2 py-1.5 text-sm">
+            class="border dark:border-gray-600 rounded px-2 py-1.5 text-sm bg-white dark:bg-gray-700 dark:text-gray-100">
         <option value="">All Categories</option>
         {% for c in categories %}
         <option value="{{ c }}" {{ 'selected' if selected_category == c }}>{{ c }}</option>
         {% endfor %}
     </select>
     <select name="source" hx-get="/merchants" hx-target="#content" hx-include="[name]"
-            class="border rounded px-2 py-1.5 text-sm">
+            class="border dark:border-gray-600 rounded px-2 py-1.5 text-sm bg-white dark:bg-gray-700 dark:text-gray-100">
         <option value="">All Sources</option>
         <option value="api" {{ 'selected' if selected_source == 'api' }}>API</option>
         <option value="manual" {{ 'selected' if selected_source == 'manual' }}>Manual</option>

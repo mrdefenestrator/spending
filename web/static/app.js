@@ -1,11 +1,40 @@
+// Theme management
+function updateThemeButton(theme) {
+    const btn = document.getElementById('theme-toggle');
+    if (!btn) return;
+    btn.querySelectorAll('[data-for-theme]').forEach(el => {
+        el.classList.toggle('hidden', el.dataset.forTheme !== theme);
+    });
+    const label = document.getElementById('theme-label');
+    if (label) label.textContent = theme;
+    btn.title = `Theme: ${theme} — click to cycle`;
+}
+
+function cycleTheme() {
+    const order = ['light', 'dark', 'system'];
+    const current = localStorage.getItem('theme') || 'system';
+    const next = order[(order.indexOf(current) + 1) % 3];
+    localStorage.setItem('theme', next);
+    const isDark = next === 'dark' ||
+        (next === 'system' && window.matchMedia('(prefers-color-scheme: dark)').matches);
+    document.documentElement.classList.toggle('dark', isDark);
+    updateThemeButton(next);
+}
+
 function updateActiveTab() {
     const currentPath = window.location.pathname;
     document.querySelectorAll('[role="tab"]').forEach(tab => {
         const isActive = tab.getAttribute('href') === currentPath;
         tab.classList.toggle('border-blue-500', isActive);
         tab.classList.toggle('text-blue-600', isActive);
+        tab.classList.toggle('dark:text-blue-400', isActive);
         tab.classList.toggle('border-transparent', !isActive);
         tab.classList.toggle('text-gray-500', !isActive);
+        tab.classList.toggle('hover:text-gray-700', !isActive);
+        tab.classList.toggle('hover:border-gray-300', !isActive);
+        tab.classList.toggle('dark:text-gray-400', !isActive);
+        tab.classList.toggle('dark:hover:text-gray-200', !isActive);
+        tab.classList.toggle('dark:hover:border-gray-500', !isActive);
     });
 }
 
@@ -80,7 +109,7 @@ function initDropzone() {
 
 document.addEventListener('DOMContentLoaded', function () {
     initDropzone();
-
+    updateThemeButton(localStorage.getItem('theme') || 'system');
 });
 
 // Re-init after HTMX swaps content (DOMContentLoaded only fires once)

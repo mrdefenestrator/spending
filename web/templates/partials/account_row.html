@@ -1,15 +1,15 @@
 {% set type_labels = {"checking": "Checking", "savings": "Savings", "credit_card": "Credit Card", "other": "Other"} %}
-<tr id="account-row-{{ a.id }}" class="border-b hover:bg-gray-50">
+<tr id="account-row-{{ a.id }}" class="border-b dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700">
     <td class="px-4 py-3 font-medium text-sm">
-        <a class="text-blue-600 hover:underline cursor-pointer"
+        <a class="text-blue-600 dark:text-blue-400 hover:underline cursor-pointer"
            hx-get="/transactions?account_id={{ a.id }}"
            hx-target="#content" hx-push-url="true">{{ a.name }}</a>
     </td>
     <td class="px-4 py-3 text-sm">{{ a.institution }}</td>
-    <td class="px-4 py-3 text-sm text-gray-500">{{ type_labels.get(a.account_type, a.account_type) }}</td>
-    <td class="px-4 py-3 text-xs text-gray-400">{{ a.created_at.strftime('%Y-%m-%d') if a.created_at else '—' }}</td>
+    <td class="px-4 py-3 text-sm text-gray-500 dark:text-gray-400">{{ type_labels.get(a.account_type, a.account_type) }}</td>
+    <td class="px-4 py-3 text-xs text-gray-400 dark:text-gray-500">{{ a.created_at.strftime('%Y-%m-%d') if a.created_at else '—' }}</td>
     <td class="px-4 py-3">
-        <button class="text-gray-400 hover:text-gray-600 p-1 rounded"
+        <button class="text-gray-400 hover:text-gray-600 dark:text-gray-500 dark:hover:text-gray-300 p-1 rounded"
                 hx-get="/accounts/{{ a.id }}/edit"
                 hx-target="#account-row-{{ a.id }}"
                 hx-swap="outerHTML">
