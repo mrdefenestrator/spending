@@ -20,7 +20,6 @@
     {% endif %}
   </th>
 {% endmacro %}
-{% set type_labels = {"checking": "Checking", "savings": "Savings", "credit_card": "Credit Card", "other": "Other"} %}
 <h2 class="text-lg font-semibold mb-4">Accounts</h2>
 <input type="hidden" name="sort" value="{{ sort or '' }}">
 <input type="hidden" name="dir" value="{{ dir or '' }}">
@@ -37,27 +36,7 @@
     </thead>
     <tbody>
         {% for a in accounts %}
-        <tr id="account-row-{{ a.id }}" class="border-b hover:bg-gray-50">
-            <td class="px-4 py-3 font-medium text-sm">
-                <a class="text-blue-600 hover:underline cursor-pointer"
-                   hx-get="/transactions?account_id={{ a.id }}"
-                   hx-target="#content" hx-push-url="true">{{ a.name }}</a>
-            </td>
-            <td class="px-4 py-3 text-sm">{{ a.institution }}</td>
-            <td class="px-4 py-3 text-sm text-gray-500">{{ type_labels.get(a.account_type, a.account_type) }}</td>
-            <td class="px-4 py-3 text-xs text-gray-400">{{ a.created_at.strftime('%Y-%m-%d') if a.created_at else '—' }}</td>
-            <td class="px-4 py-3">
-                <button class="text-gray-400 hover:text-gray-600 p-1 rounded"
-                        hx-get="/accounts/{{ a.id }}/edit"
-                        hx-target="#account-row-{{ a.id }}"
-                        hx-swap="outerHTML">
-                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                              d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"/>
-                    </svg>
-                </button>
-            </td>
-        </tr>
+        {% include "partials/account_row.html" %}
         {% endfor %}
     </tbody>
 </table>

@@ -70,9 +70,24 @@ def edit_form(merchant_id):
     engine = current_app.config["engine"]
     with engine.connect() as conn:
         categories = get_category_names(conn)
+        merchants = list_merchants_with_stats(conn)
+    merchant = next((m for m in merchants if m["id"] == merchant_id), None)
+    if not merchant:
+        return "", 404
     return render_template(
-        "partials/merchant_edit.html", merchant_id=merchant_id, categories=categories
+        "partials/merchant_edit.html", merchant=merchant, categories=categories
     )
+
+
+@bp.route("/merchants/<int:merchant_id>/row")
+def row(merchant_id):
+    engine = current_app.config["engine"]
+    with engine.connect() as conn:
+        merchants = list_merchants_with_stats(conn)
+    merchant = next((m for m in merchants if m["id"] == merchant_id), None)
+    if not merchant:
+        return "", 404
+    return render_template("partials/merchant_row.html", m=merchant)
 
 
 @bp.route("/merchants/<int:merchant_id>/category", methods=["POST"])
@@ -83,5 +98,8 @@ def update_category(merchant_id):
     engine = current_app.config["engine"]
     with engine.connect() as conn:
         set_merchant_category(conn, merchant_name, category, source="manual")
-
-    return "", 200, {"HX-Trigger": "refreshMerchants"}
+        merchants = list_merchants_with_stats(conn)
+    merchant = next((m for m in merchants if m["id"] == merchant_id), None)
+    if not merchant:
+        return "", 404
+    return render_template("partials/merchant_row.html", m=merchant)

@@ -33,28 +33,7 @@
     </thead>
     <tbody>
         {% for m in merchants %}
-        <tr class="border-b hover:bg-gray-50">
-            <td class="px-4 py-3 font-medium text-sm">
-                <a class="text-blue-600 hover:underline cursor-pointer"
-                   hx-get="/transactions?search={{ m.merchant_name | urlencode }}"
-                   hx-target="#content" hx-push-url="true">{{ m.merchant_name }}</a>
-            </td>
-            <td class="px-4 py-3 text-sm">{{ m.category }}</td>
-            <td class="px-4 py-3 text-sm text-gray-500">{{ m.source }}</td>
-            <td class="px-4 py-3 text-right text-sm">{{ m.txn_count }}</td>
-            <td class="px-4 py-3 text-sm text-gray-500">{{ m.last_seen or '—' }}</td>
-            <td class="px-4 py-3">
-                <button class="text-gray-400 hover:text-gray-600 p-1 rounded"
-                        hx-get="/merchants/{{ m.id }}/edit"
-                        hx-target="closest tr"
-                        hx-swap="afterend">
-                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                              d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"/>
-                    </svg>
-                </button>
-            </td>
-        </tr>
+        {% include "partials/merchant_row.html" %}
         {% endfor %}
     </tbody>
 </table>

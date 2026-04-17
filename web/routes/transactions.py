@@ -74,15 +74,37 @@ def index():
 
 @bp.route("/transactions/<int:txn_id>/edit-category", methods=["GET"])
 def edit_category_form(txn_id):
+    from spending.repository.aggregations import _base_query
+    from spending.models import transactions as txn_table
+    from sqlalchemy import select
+
     engine = current_app.config["engine"]
     with engine.connect() as conn:
         categories = get_category_names(conn)
+        subq = _base_query().where(txn_table.c.id == txn_id).subquery()
+        row = conn.execute(select(subq)).fetchone()
+    current_category = dict(row._mapping)["category"] if row else None
     return render_template(
         "partials/transaction_edit.html",
         txn_id=txn_id,
         categories=categories,
-        field="category",
+        current_category=current_category,
     )
+
+
+@bp.route("/transactions/<int:txn_id>/row")
+def row(txn_id):
+    from spending.repository.aggregations import _base_query
+    from spending.models import transactions as txn_table
+    from sqlalchemy import select
+
+    engine = current_app.config["engine"]
+    with engine.connect() as conn:
+        subq = _base_query().where(txn_table.c.id == txn_id).subquery()
+        result = conn.execute(select(subq)).fetchone()
+    if not result:
+        return "", 404
+    return render_template("partials/transaction_row.html", txn=dict(result._mapping))
 
 
 @bp.route("/transactions/<int:txn_id>/category", methods=["POST"])
@@ -117,8 +139,6 @@ def update_category(txn_id):
     if not updated:
         return "", 404
 
-    row_html = render_template(
-        "partials/transaction_row.html", txn=dict(updated._mapping)
-    )
+    row_html = render_template("partials/transaction_row.html", txn=dict(updated._mapping))
     oob_delete = f'<tr id="edit-{txn_id}" hx-swap-oob="delete"></tr>'
     return Response(row_html + oob_delete, content_type="text/html")

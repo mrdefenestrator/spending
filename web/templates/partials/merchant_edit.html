@@ -1,16 +1,21 @@
-<tr class="bg-blue-50 border-b">
-    <td colspan="5" class="px-4 py-3">
-        <form hx-post="/merchants/{{ merchant_id }}/category" hx-swap="none"
+<tr id="merchant-row-{{ merchant.id }}" class="border-b bg-blue-50">
+    <td colspan="6" class="px-4 py-3">
+        <form hx-post="/merchants/{{ merchant.id }}/category"
+              hx-target="#merchant-row-{{ merchant.id }}"
+              hx-swap="outerHTML"
               class="flex items-center gap-3">
-            <input type="hidden" name="merchant_name" value="">
+            <input type="hidden" name="merchant_name" value="{{ merchant.merchant_name }}">
+            <span class="text-sm font-medium text-gray-700">{{ merchant.merchant_name }}</span>
             <select name="category" class="border rounded px-2 py-1.5 text-sm">
                 {% for c in categories %}
-                <option value="{{ c }}">{{ c }}</option>
+                <option value="{{ c }}" {{ 'selected' if merchant.category == c }}>{{ c }}</option>
                 {% endfor %}
             </select>
             <button type="submit" class="bg-blue-500 text-white px-3 py-1 rounded text-sm">Save</button>
             <button type="button" class="text-gray-500 text-sm"
-                    onclick="this.closest('tr').remove()">Cancel</button>
+                    hx-get="/merchants/{{ merchant.id }}/row"
+                    hx-target="#merchant-row-{{ merchant.id }}"
+                    hx-swap="outerHTML">Cancel</button>
         </form>
     </td>
 </tr>

@@ -29,27 +29,12 @@
             {{ sort_th("account", "Account") }}
             {{ sort_th("category", "Category") }}
             {{ sort_th("amount", "Amount", first_dir="desc", extra_class="text-right") }}
+            <th class="px-4 py-3 w-10"></th>
         </tr>
     </thead>
     <tbody>
         {% for txn in transactions %}
-        <tr id="txn-row-{{ txn.id }}" class="border-b hover:bg-gray-50">
-<td class="px-4 py-3 text-sm">{{ txn.date }}</td>
-            <td class="px-4 py-3 text-sm">{{ txn.merchant }}</td>
-            <td class="px-4 py-3 text-sm text-gray-500">{{ txn.raw_description }}</td>
-            <td class="px-4 py-3 text-sm text-gray-500">{{ txn.account_name or '—' }}</td>
-            <td class="px-4 py-3 text-sm cursor-pointer text-blue-600 hover:underline"
-                onclick="(function(){ var edit=document.getElementById('edit-{{ txn.id }}'); if(edit){ edit.remove(); } })()"
-                hx-trigger="click[!document.getElementById('edit-{{ txn.id }}')]"
-                hx-get="/transactions/{{ txn.id }}/edit-category"
-                hx-target="closest tr"
-                hx-swap="afterend">
-                {{ txn.category }}
-            </td>
-            <td class="px-4 py-3 text-right {{ 'text-red-600' if txn.amount < 0 else 'text-green-600' }}">
-                {{ '-$' if txn.amount < 0 else '+$' }}{{ txn.amount|abs|money }}
-            </td>
-        </tr>
+        {% include "partials/transaction_row.html" %}
         {% endfor %}
     </tbody>
 </table>

@@ -50,6 +50,17 @@ def edit_form(account_id):
     return render_template("partials/account_edit_row.html", account=acct)
 
 
+@bp.route("/accounts/<int:account_id>/row")
+def row(account_id):
+    engine = current_app.config["engine"]
+    with engine.connect() as conn:
+        accts = list_accounts(conn)
+    acct = next((a for a in accts if a["id"] == account_id), None)
+    if not acct:
+        return "", 404
+    return render_template("partials/account_row.html", a=acct)
+
+
 @bp.route("/accounts/<int:account_id>", methods=["POST"])
 def update(account_id):
     name = request.form.get("name", "").strip()
@@ -69,10 +80,10 @@ def update(account_id):
                 account_type=account_type,
             )
         accts = list_accounts(conn)
-    accts = _sort_accounts(accts, "", "")
-    return render_template(
-        "partials/accounts_content.html", active_tab="accounts", accounts=accts, sort="", dir=""
-    )
+    acct = next((a for a in accts if a["id"] == account_id), None)
+    if not acct:
+        return "", 404
+    return render_template("partials/account_row.html", a=acct)
 
 
 @bp.route("/accounts", methods=["POST"])

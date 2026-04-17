@@ -1,0 +1,19 @@
+{% set type_labels = {"checking": "Checking", "savings": "Savings", "credit_card": "Credit Card", "other": "Other"} %}
+<tr id="account-row-{{ a.id }}" class="border-b hover:bg-gray-50">
+    <td class="px-4 py-3 font-medium text-sm">
+        <a class="text-blue-600 hover:underline cursor-pointer"
+           hx-get="/transactions?account_id={{ a.id }}"
+           hx-target="#content" hx-push-url="true">{{ a.name }}</a>
+    </td>
+    <td class="px-4 py-3 text-sm">{{ a.institution }}</td>
+    <td class="px-4 py-3 text-sm text-gray-500">{{ type_labels.get(a.account_type, a.account_type) }}</td>
+    <td class="px-4 py-3 text-xs text-gray-400">{{ a.created_at.strftime('%Y-%m-%d') if a.created_at else '—' }}</td>
+    <td class="px-4 py-3">
+        <button class="text-gray-400 hover:text-gray-600 p-1 rounded"
+                hx-get="/accounts/{{ a.id }}/edit"
+                hx-target="#account-row-{{ a.id }}"
+                hx-swap="outerHTML">
+            {% include "partials/edit_icon.html" %}
+        </button>
+    </td>
+</tr>
