@@ -109,9 +109,8 @@ amount_column: "Amount (total)"
 amount_format: signed_dollar
 description_column: "Note"
 type_column: "Type"
-party_columns:
-  - "From"
-  - "To"
+debit_party_column: "To"
+credit_party_column: "From"
 account_name: null
 header_pattern:
   - "ID"
@@ -121,13 +120,15 @@ header_pattern:
 """
     )
     result = parse_csv(sample_venmo_csv, str(config_path))
-    # 2 payments + 1 standard transfer; opening balance and footer rows skipped
+    # 2 payments (credits) + 1 standard transfer (debit); opening/footer rows skipped
     assert len(result["transactions"]) == 3
     txns = result["transactions"]
     assert txns[0]["date"] == date(2026, 4, 3)
     assert txns[0]["amount"] == Decimal("46.74")
+    # credits: other party comes from "From" column
     assert txns[0]["raw_description"] == "Payment: March phone bill (Alice Smith)"
     assert txns[1]["raw_description"] == "Payment: Dinner (Bob Jones)"
+    # debit transfer: To is empty, so no party suffix
     assert txns[2]["amount"] == Decimal("-66.74")
     assert txns[2]["raw_description"] == "Standard Transfer"
 
@@ -146,6 +147,9 @@ date_format: "%Y-%m-%dT%H:%M:%S"
 amount_column: "Amount (total)"
 amount_format: signed_dollar
 description_column: "Note"
+type_column: "Type"
+debit_party_column: "To"
+credit_party_column: "From"
 account_name: null
 header_pattern:
   - "ID"

@@ -7,9 +7,8 @@ amount_column: "Amount (total)"
 amount_format: signed_dollar
 description_column: "Note"
 type_column: "Type"
-party_columns:
-  - "From"
-  - "To"
+debit_party_column: "To"
+credit_party_column: "From"
 account_name: null
 header_pattern:
   - "ID"

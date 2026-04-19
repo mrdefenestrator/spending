@@ -57,18 +57,13 @@ def parse_csv(file_path: str | Path, config_path: str | Path) -> ImportResult:
 
             note = row.get(desc_col, "").strip()
             type_col = config.get("type_column")
-            party_cols = config.get("party_columns", [])
+            debit_party_col = config.get("debit_party_column")
+            credit_party_col = config.get("credit_party_column")
 
-            if type_col or party_cols:
+            if type_col or debit_party_col or credit_party_col:
                 txn_type = row.get(type_col, "").strip() if type_col else ""
-                party = next(
-                    (
-                        row.get(c, "").strip()
-                        for c in party_cols
-                        if row.get(c, "").strip()
-                    ),
-                    "",
-                )
+                party_col = debit_party_col if amount < 0 else credit_party_col
+                party = row.get(party_col, "").strip() if party_col else ""
                 if txn_type and note:
                     description = f"{txn_type}: {note}"
                     if party:
