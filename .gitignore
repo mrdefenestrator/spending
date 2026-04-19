@@ -9,3 +9,7 @@ __pycache__/
 *.egg-info/
 data/
 docker-compose.yml
+*.csv
+*.tsv
+*.qfx
+*.ofx
