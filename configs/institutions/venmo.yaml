@@ -6,6 +6,10 @@ date_format: "%Y-%m-%dT%H:%M:%S"
 amount_column: "Amount (total)"
 amount_format: signed_dollar
 description_column: "Note"
+type_column: "Type"
+party_columns:
+  - "From"
+  - "To"
 account_name: null
 header_pattern:
   - "ID"

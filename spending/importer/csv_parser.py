@@ -55,7 +55,32 @@ def parse_csv(file_path: str | Path, config_path: str | Path) -> ImportResult:
             except ValueError:
                 continue
 
-            description = row.get(desc_col, "").strip()
+            note = row.get(desc_col, "").strip()
+            type_col = config.get("type_column")
+            party_cols = config.get("party_columns", [])
+
+            if type_col or party_cols:
+                txn_type = row.get(type_col, "").strip() if type_col else ""
+                party = next(
+                    (
+                        row.get(c, "").strip()
+                        for c in party_cols
+                        if row.get(c, "").strip()
+                    ),
+                    "",
+                )
+                if txn_type and note:
+                    description = f"{txn_type}: {note}"
+                    if party:
+                        description += f" ({party})"
+                elif txn_type:
+                    description = f"{txn_type} ({party})" if party else txn_type
+                elif note:
+                    description = f"{note} ({party})" if party else note
+                else:
+                    description = party
+            else:
+                description = note
 
             transactions.append(
                 ParsedTransaction(

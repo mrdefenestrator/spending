@@ -108,6 +108,10 @@ date_format: "%Y-%m-%dT%H:%M:%S"
 amount_column: "Amount (total)"
 amount_format: signed_dollar
 description_column: "Note"
+type_column: "Type"
+party_columns:
+  - "From"
+  - "To"
 account_name: null
 header_pattern:
   - "ID"
@@ -119,11 +123,13 @@ header_pattern:
     result = parse_csv(sample_venmo_csv, str(config_path))
     # 2 payments + 1 standard transfer; opening balance and footer rows skipped
     assert len(result["transactions"]) == 3
-    txn = result["transactions"][0]
-    assert txn["date"] == date(2026, 4, 3)
-    assert txn["amount"] == Decimal("46.74")
-    assert txn["raw_description"] == "March phone bill"
-    assert result["transactions"][2]["amount"] == Decimal("-66.74")
+    txns = result["transactions"]
+    assert txns[0]["date"] == date(2026, 4, 3)
+    assert txns[0]["amount"] == Decimal("46.74")
+    assert txns[0]["raw_description"] == "Payment: March phone bill (Alice Smith)"
+    assert txns[1]["raw_description"] == "Payment: Dinner (Bob Jones)"
+    assert txns[2]["amount"] == Decimal("-66.74")
+    assert txns[2]["raw_description"] == "Standard Transfer"
 
 
 def test_detect_institution_config_venmo(sample_venmo_csv, tmp_path):
