@@ -31,8 +31,6 @@
 {% endmacro %}
 
 <div id="account-panel">
-    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Account</label>
-
     {% if accounts %}
     <select name="account_id" required
             class="border border-gray-300 dark:border-gray-600 rounded-md px-3 h-8 w-full text-sm bg-white dark:bg-gray-700 dark:text-gray-100 focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500">
@@ -43,23 +41,23 @@
         </option>
         {% endfor %}
     </select>
-    {% endif %}
 
-    {% if show_create or not accounts %}
-    <div class="mt-3 p-3 border border-gray-200 dark:border-gray-600 rounded-md bg-gray-50 dark:bg-gray-700 space-y-2">
-        {% if not accounts %}
-        <p class="text-sm text-amber-600 font-medium">No accounts yet — create one to continue.</p>
-        {% else %}
-        <p class="text-sm text-gray-600 dark:text-gray-300 font-medium">Create new account</p>
-        {% endif %}
+    <button type="button"
+            class="mt-2 h-8 px-3 text-sm border border-gray-300 dark:border-gray-600 rounded-md text-gray-500 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700 hover:text-gray-700 dark:hover:text-gray-200 focus:outline-none focus:ring-1 focus:ring-blue-500 transition-colors"
+            onclick="const f=document.getElementById('new-account-form');const open=!f.classList.contains('hidden');f.classList.toggle('hidden',open);this.textContent=open?'+ New account':'Cancel';">
+        {% if show_create %}Cancel{% else %}+ New account{% endif %}
+    </button>
+
+    <div id="new-account-form" class="{{ 'hidden' if not show_create else '' }} mt-3 p-3 border border-gray-200 dark:border-gray-600 rounded-md bg-gray-50 dark:bg-gray-700 space-y-2">
         {{ create_form(meta, error) }}
     </div>
+
     {% else %}
-    <details class="mt-1">
-        <summary class="text-sm text-blue-600 cursor-pointer select-none">+ Create new account</summary>
-        <div class="mt-2 p-3 border border-gray-200 dark:border-gray-600 rounded-md bg-gray-50 dark:bg-gray-700 space-y-2">
-            {{ create_form(meta, error) }}
-        </div>
-    </details>
+
+    <div class="p-3 border border-gray-200 dark:border-gray-600 rounded-md bg-amber-50 dark:bg-amber-900/20 space-y-2">
+        <p class="text-sm text-amber-700 dark:text-amber-400 font-medium">No accounts yet — create one to continue.</p>
+        {{ create_form(meta, error) }}
+    </div>
+
     {% endif %}
 </div>
