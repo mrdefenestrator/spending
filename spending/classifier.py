@@ -19,8 +19,7 @@ Categories: {categories_str}
 Merchant names:
 {merchants_str}
 
-Respond with ONLY a JSON array. Each element must have "merchant_name" (exactly as given) and "category" (from the list above). Example:
-[{{"merchant_name": "WHOLE FOODS", "category": "Groceries"}}]"""
+Return a JSON array where each element has "merchant_name" (exactly as given) and "category" (from the list above)."""
 
 
 def classify_merchants(
@@ -41,26 +40,27 @@ def classify_merchants(
         model="claude-haiku-4-5-20251001",
         max_tokens=1024,
         messages=[{"role": "user", "content": prompt}],
+        output_config={
+            "format": {
+                "type": "json_schema",
+                "schema": {
+                    "type": "array",
+                    "items": {
+                        "type": "object",
+                        "properties": {
+                            "merchant_name": {"type": "string"},
+                            "category": {"type": "string", "enum": category_names},
+                        },
+                        "required": ["merchant_name", "category"],
+                        "additionalProperties": False,
+                    },
+                },
+            }
+        },
     )
 
-    text = response.content[0].text
-    try:
-        classifications = json.loads(text)
-    except json.JSONDecodeError:
-        logger.warning("Claude returned non-JSON response: %.200s", text)
-        return {}
-
-    result = {}
-    valid_categories = set(category_names)
-    for item in classifications:
-        name = item.get("merchant_name")
-        category = item.get("category")
-        if name and category and category in valid_categories:
-            result[name] = category
-        else:
-            logger.warning("Skipping invalid classification item: %s", item)
-
-    return result
+    classifications = json.loads(response.content[0].text)
+    return {item["merchant_name"]: item["category"] for item in classifications}
 
 
 def _friendly_api_error(e: anthropic.APIError) -> str:
