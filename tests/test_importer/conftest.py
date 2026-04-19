@@ -76,6 +76,23 @@ def sample_ofx_with_meta(tmp_path):
 
 
 @pytest.fixture
+def sample_venmo_csv(tmp_path):
+    content = (
+        "Account Statement - (@Test-User) ,,,,,,,,,,,,,,,,,,,,,\n"
+        "Account Activity,,,,,,,,,,,,,,,,,,,,,\n"
+        ",ID,Datetime,Type,Status,Note,From,To,Amount (total),Amount (tip),Amount (tax),Amount (fee),Tax Rate,Tax Exempt,Funding Source,Destination,Beginning Balance,Ending Balance,Statement Period Venmo Fees,Terminal Location,Year to Date Venmo Fees,Disclaimer\n"
+        ",,,,,,,,,,,,,,,,$0.00,,,,,\n"
+        ",1001,2026-04-03T16:03:48,Payment,Complete,March phone bill,Alice Smith,Test User,+ $46.74,,0,,0,,,Venmo balance,,,,Venmo,,\n"
+        ",1002,2026-04-10T20:53:20,Payment,Complete,Dinner,Bob Jones,Test User,+ $20.00,,0,,0,,,Venmo balance,,,,Venmo,,\n"
+        ",1003,2026-04-10T21:07:55,Standard Transfer,Issued,,,,- $66.74,,,,,,,US BANK NA *1234,,,,Venmo,,\n"
+        ',,,,,,,,,,,,,,,,,$0.00,$0.00,,$0.00,"Disclaimer text"\n'
+    )
+    path = tmp_path / "venmo.csv"
+    path.write_text(content)
+    return path
+
+
+@pytest.fixture
 def sample_csv(tmp_path):
     content = """Transaction Date,Post Date,Description,Category,Type,Amount
 01/15/2024,01/16/2024,WHOLE FOODS MARKET #10234,Groceries,Sale,-42.50

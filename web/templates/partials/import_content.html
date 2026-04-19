@@ -34,6 +34,11 @@
                 {{ r.filename }}: {{ r.error if r.error else '%d new, %d skipped, %d flagged'|format(r.new_count, r.skipped_count, r.flagged_count) }}
             </div>
             {% endfor %}
+            {% if classified_count %}
+            <div class="text-sm text-blue-600 dark:text-blue-400">
+                · {{ classified_count }} merchant{{ 's' if classified_count != 1 else '' }} auto-classified
+            </div>
+            {% endif %}
         </div>
         {% endif %}
 

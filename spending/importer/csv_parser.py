@@ -1,11 +1,21 @@
 import csv
 from datetime import datetime
-from decimal import Decimal
+from decimal import Decimal, InvalidOperation
 from pathlib import Path
 
 import yaml
 
 from spending.types import ImportResult, ParsedTransaction
+
+_MAX_HEADER_SCAN = 10
+
+
+def _parse_signed_dollar(value: str) -> Decimal:
+    """Parse amounts like '+ $46.74' or '- $208.85'."""
+    value = value.strip()
+    negative = value.startswith("-")
+    cleaned = value.lstrip("+-").replace("$", "").replace(",", "").strip()
+    return -Decimal(cleaned) if negative else Decimal(cleaned)
 
 
 def parse_csv(file_path: str | Path, config_path: str | Path) -> ImportResult:
@@ -16,15 +26,36 @@ def parse_csv(file_path: str | Path, config_path: str | Path) -> ImportResult:
     amount_col = config["amount_column"]
     desc_col = config["description_column"]
     date_fmt = config["date_format"]
+    header_row = config.get("header_row", 0)
+    amount_format = config.get("amount_format", "standard")
 
     transactions: list[ParsedTransaction] = []
 
     with open(file_path, newline="") as f:
+        for _ in range(header_row):
+            f.readline()
         reader = csv.DictReader(f)
         for row in reader:
-            txn_date = datetime.strptime(row[date_col].strip(), date_fmt).date()
-            amount = Decimal(row[amount_col].strip().replace(",", ""))
-            description = row[desc_col].strip()
+            raw_amount = row.get(amount_col, "").strip()
+            if not raw_amount:
+                continue
+            try:
+                if amount_format == "signed_dollar":
+                    amount = _parse_signed_dollar(raw_amount)
+                else:
+                    amount = Decimal(raw_amount.replace(",", ""))
+            except (InvalidOperation, ValueError):
+                continue
+
+            raw_date = row.get(date_col, "").strip()
+            if not raw_date:
+                continue
+            try:
+                txn_date = datetime.strptime(raw_date, date_fmt).date()
+            except ValueError:
+                continue
+
+            description = row.get(desc_col, "").strip()
 
             transactions.append(
                 ParsedTransaction(
@@ -43,22 +74,27 @@ def parse_csv(file_path: str | Path, config_path: str | Path) -> ImportResult:
 def detect_institution_config(
     csv_path: str | Path, configs_dir: str | Path
 ) -> str | None:
+    rows: list[list[str]] = []
     with open(csv_path, newline="") as f:
         reader = csv.reader(f)
-        try:
-            headers = next(reader)
-        except StopIteration:
-            return None
-
-    headers = [h.strip() for h in headers]
+        for _ in range(_MAX_HEADER_SCAN):
+            try:
+                rows.append([h.strip() for h in next(reader)])
+            except StopIteration:
+                break
 
     configs_dir = Path(configs_dir)
     for config_file in configs_dir.glob("*.yaml"):
         with open(config_file) as f:
             config = yaml.safe_load(f)
 
+        header_row = config.get("header_row", 0)
         pattern = config.get("header_pattern", [])
-        if pattern and all(col in headers for col in pattern):
+        if (
+            pattern
+            and header_row < len(rows)
+            and all(col in rows[header_row] for col in pattern)
+        ):
             return str(config_file)
 
     return None

@@ -23,12 +23,12 @@ def test_merchants_category_filter_present(page, flask_server):
 
 
 def test_merchants_source_filter_present(page, flask_server):
-    """Source dropdown filter is rendered with API and Manual options."""
+    """Source dropdown filter is rendered with Auto and Manual options."""
     page.goto(f"{flask_server}/merchants")
     source_select = page.locator("select[name='source']")
     assert source_select.is_visible()
     options = source_select.locator("option").all_inner_texts()
-    assert "API" in options
+    assert "Auto" in options
     assert "Manual" in options
 
 

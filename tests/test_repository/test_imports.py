@@ -8,6 +8,7 @@ from spending.repository.imports import (
     create_import,
     get_existing_fingerprints,
     get_staging_imports,
+    get_staging_transactions,
     insert_transactions,
     reject_import,
 )
@@ -79,6 +80,32 @@ def test_reject_import(conn):
     imp_id = create_import(
         conn, account_id=acct_id, filename="test.ofx", file_hash="abc123"
     )
+    insert_transactions(
+        conn,
+        import_id=imp_id,
+        account_id=acct_id,
+        transactions_data=[
+            {
+                "date": date(2024, 1, 15),
+                "amount": Decimal("-42.50"),
+                "raw_description": "WHOLE FOODS",
+                "normalized_merchant": "WHOLE FOODS",
+                "fingerprint": "fp-reject-1",
+            }
+        ],
+    )
     reject_import(conn, imp_id)
-    staging = get_staging_imports(conn)
-    assert len(staging) == 0
+    assert len(get_staging_imports(conn)) == 0
+    assert get_staging_transactions(conn, imp_id) == []
+    assert "fp-reject-1" not in get_existing_fingerprints(conn, acct_id)
+
+
+def test_check_file_hash_ignored_after_reject(conn):
+    acct_id = add_account(
+        conn, name="Chase", institution="Chase", account_type="credit_card"
+    )
+    imp_id = create_import(
+        conn, account_id=acct_id, filename="test.ofx", file_hash="abc123"
+    )
+    reject_import(conn, imp_id)
+    assert check_file_hash(conn, "abc123") is False

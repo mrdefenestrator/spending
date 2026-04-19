@@ -71,9 +71,12 @@ def upload():
                 all_new_merchants.update(result.get("new_merchants", []))
 
         # Classify new merchants
+        classified_count = 0
         classify_warning = None
         if all_new_merchants:
-            _, classify_warning = classify_and_cache(conn, list(all_new_merchants))
+            classified_count, classify_warning = classify_and_cache(
+                conn, list(all_new_merchants)
+            )
 
         # Re-fetch staging imports
         staging = get_staging_imports(conn)
@@ -90,6 +93,7 @@ def upload():
         staging=staging,
         accounts=accounts,
         results=results,
+        classified_count=classified_count,
         classify_warning=classify_warning,
     )
 

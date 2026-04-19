@@ -172,6 +172,34 @@ def test_import_reject_removes_batch_from_staging(page, import_server):
 
 
 # ---------------------------------------------------------------------------
+# 12b  Re-import the rejected file — should be accepted, not blocked
+# ---------------------------------------------------------------------------
+
+
+def test_import_rejected_file_can_be_reimported(page, import_server, ofx_file_2):
+    """After rejection, uploading the same file again creates a new staging batch
+    instead of showing 'already imported'."""
+    page.goto(f"{import_server}/import")
+
+    with page.expect_response(lambda r: "detect-account" in r.url):
+        page.set_input_files("#file-input", str(ofx_file_2))
+
+    page.select_option("select[name='account_id']", label="Test Checking")
+
+    with page.expect_response(lambda r: "/import/upload" in r.url and r.status == 200):
+        page.click("button[type='submit']")
+
+    content = page.locator("#content").inner_text().lower()
+    assert "already imported" not in content
+    page.wait_for_selector('[id^="batch-"]')
+
+    # Clean up: reject again so staging is clear for subsequent tests
+    with page.expect_response(lambda r: "/reject" in r.url and r.status == 200):
+        page.locator("button:has-text('Reject')").first.click()
+    page.wait_for_selector("text=No pending imports")
+
+
+# ---------------------------------------------------------------------------
 # 13  Duplicate-file detection
 # ---------------------------------------------------------------------------
 

@@ -1,7 +1,7 @@
 import hashlib
 from pathlib import Path
 
-from sqlalchemy import Connection, func, insert, select, update
+from sqlalchemy import Connection, delete, func, insert, select, update
 from sqlalchemy.sql.functions import coalesce
 
 from spending.models import imports, merchant_cache, transactions
@@ -17,7 +17,10 @@ def compute_file_hash(file_path: str | Path) -> str:
 
 def check_file_hash(conn: Connection, file_hash: str) -> bool:
     row = conn.execute(
-        select(imports.c.id).where(imports.c.file_hash == file_hash)
+        select(imports.c.id).where(
+            imports.c.file_hash == file_hash,
+            imports.c.status != "rejected",
+        )
     ).fetchone()
     return row is not None
 
@@ -109,6 +112,7 @@ def confirm_import(conn: Connection, import_id: int) -> None:
 
 
 def reject_import(conn: Connection, import_id: int) -> None:
+    conn.execute(delete(transactions).where(transactions.c.import_id == import_id))
     conn.execute(
         update(imports).where(imports.c.id == import_id).values(status="rejected")
     )

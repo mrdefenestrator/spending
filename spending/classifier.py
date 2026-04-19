@@ -94,11 +94,19 @@ def classify_and_cache(
     try:
         uncached = get_uncached_merchants(conn, merchant_names)
         if not uncached:
+            logger.info(
+                "Classification skipped — all %d merchants already cached",
+                len(merchant_names),
+            )
             return 0, None
+        logger.info("Sending %d uncached merchants to Claude API", len(uncached))
         category_names = get_category_names(conn)
         classifications = classify_merchants(uncached, category_names)
         for name, category in classifications.items():
             set_merchant_category(conn, name, category, source="api")
+        logger.info(
+            "Claude classified %d/%d merchants", len(classifications), len(uncached)
+        )
         return len(classifications), None
     except anthropic.APIError as e:
         return 0, _friendly_api_error(e)
