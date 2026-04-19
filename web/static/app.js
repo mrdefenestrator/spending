@@ -41,6 +41,16 @@ function updateActiveTab() {
 document.addEventListener('htmx:afterSettle', updateActiveTab);
 document.addEventListener('htmx:pushedIntoHistory', updateActiveTab);
 
+function updateImportButton() {
+    const btn = document.getElementById('import-submit');
+    if (!btn) return;
+    const fileInput = document.getElementById('file-input');
+    const accountSelect = document.querySelector('select[name="account_id"]');
+    const hasFile = fileInput && fileInput.files.length > 0;
+    const hasAccount = accountSelect && accountSelect.value !== '';
+    btn.disabled = !(hasFile && hasAccount);
+}
+
 function detectAccount(file) {
     const formData = new FormData();
     formData.append('files', file);
@@ -54,6 +64,7 @@ function detectAccount(file) {
             if (panel) {
                 panel.outerHTML = html;
                 htmx.process(document.body);
+                updateImportButton();
             }
         })
         .catch(err => {
@@ -91,10 +102,13 @@ function initDropzone() {
 
     fileInput.addEventListener('change', function () {
         updateFileList();
+        updateImportButton();
         if (fileInput.files.length > 0) {
             detectAccount(fileInput.files[0]);
         }
     });
+
+    updateImportButton();
 
     function updateFileList() {
         const files = fileInput.files;
@@ -114,6 +128,12 @@ document.addEventListener('DOMContentLoaded', function () {
 
 // Re-init after HTMX swaps content (DOMContentLoaded only fires once)
 document.addEventListener('htmx:afterSettle', initDropzone);
+document.addEventListener('htmx:afterSettle', updateImportButton);
+
+// Account select may be replaced by HTMX — use delegation
+document.addEventListener('change', function (e) {
+    if (e.target.name === 'account_id') updateImportButton();
+});
 
 function navigateToTransactions(year, month, category) {
     const url = '/transactions?year=' + year + '&month=' + month + '&category=' + encodeURIComponent(category);

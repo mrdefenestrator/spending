@@ -22,7 +22,10 @@
                 {% include "partials/account_panel.html" %}
                 {% endwith %}
             </div>
-            <button type="submit" class="w-full h-9 bg-blue-500 text-white rounded-md text-sm font-medium hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2">
+            <button type="submit" id="import-submit" disabled
+                    class="w-full h-9 bg-blue-500 text-white rounded-md text-sm font-medium
+                           hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2
+                           disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:bg-blue-500">
                 Import
             </button>
         </form>
