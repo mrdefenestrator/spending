@@ -1,6 +1,6 @@
 from sqlalchemy import Connection, delete, func, insert, select
 
-from spending.models import accounts, transactions
+from spending.models import accounts, imports, transactions
 
 
 def add_account(
@@ -24,9 +24,19 @@ def list_accounts(conn: Connection) -> list[dict]:
         .group_by(transactions.c.account_id)
         .subquery()
     )
+    latest_import = (
+        select(
+            imports.c.account_id,
+            func.max(imports.c.imported_at).label("latest_import_at"),
+        )
+        .where(imports.c.status == "confirmed")
+        .group_by(imports.c.account_id)
+        .subquery()
+    )
     stmt = (
-        select(accounts, latest_txn.c.latest_txn_date)
+        select(accounts, latest_txn.c.latest_txn_date, latest_import.c.latest_import_at)
         .outerjoin(latest_txn, accounts.c.id == latest_txn.c.account_id)
+        .outerjoin(latest_import, accounts.c.id == latest_import.c.account_id)
         .order_by(accounts.c.name)
     )
     rows = conn.execute(stmt).fetchall()

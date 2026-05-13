@@ -30,6 +30,19 @@
             <span class="text-gray-400 dark:text-gray-500 text-xs">—</span>
         {% endif %}
     </td>
+    <td class="px-4 py-3 text-xs text-gray-400 dark:text-gray-500">
+        {% if a.latest_import_at %}
+            {% set days = a.days_since_import %}
+            <span title="{{ a.latest_import_at.strftime('%Y-%m-%d') }}">
+                {% if days == 0 %}today
+                {% elif days == 1 %}yesterday
+                {% elif days < 30 %}{{ days }}d ago
+                {% elif days < 365 %}{{ days // 30 }}mo ago
+                {% else %}{{ days // 365 }}yr ago
+                {% endif %}
+            </span>
+        {% else %}—{% endif %}
+    </td>
     <td class="px-4 py-3">
         <button class="text-gray-400 hover:text-gray-600 dark:text-gray-500 dark:hover:text-gray-300 p-1 rounded"
                 hx-get="/accounts/{{ a.id }}/edit"

@@ -18,6 +18,7 @@ _ACCOUNT_SORT_KEYS = {
     "type": lambda a: (a["account_type"] or "").lower(),
     "created": lambda a: str(a["created_at"] or ""),
     "latest": lambda a: str(a["latest_txn_date"] or ""),
+    "imported": lambda a: str(a["latest_import_at"] or ""),
 }
 
 bp = Blueprint("accounts", __name__)
@@ -28,6 +29,8 @@ def _enrich_accounts(accts: list) -> list:
     for a in accts:
         ltd = a.get("latest_txn_date")
         a["days_since_latest"] = (today - ltd).days if ltd else None
+        lia = a.get("latest_import_at")
+        a["days_since_import"] = (today - lia.date()).days if lia else None
     return accts
 
 
