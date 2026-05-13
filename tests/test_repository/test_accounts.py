@@ -10,7 +10,11 @@ from spending.repository.accounts import (
     get_account_by_name,
     list_accounts,
 )
-from spending.repository.imports import create_import, insert_transactions
+from spending.repository.imports import (
+    confirm_import,
+    create_import,
+    insert_transactions,
+)
 
 
 def test_add_and_list_accounts(conn):
@@ -99,3 +103,19 @@ def test_list_accounts_latest_txn_date(conn):
     )
     accts = list_accounts(conn)
     assert accts[0]["latest_txn_date"] == date(2026, 4, 15)
+
+
+def test_list_accounts_latest_import_at(conn):
+    acct_id = add_account(
+        conn, name="Chase Visa", institution="Chase", account_type="credit_card"
+    )
+    assert list_accounts(conn)[0]["latest_import_at"] is None
+
+    import_id = create_import(
+        conn, account_id=acct_id, filename="test.ofx", file_hash="abc123"
+    )
+    # staging import does not count
+    assert list_accounts(conn)[0]["latest_import_at"] is None
+
+    confirm_import(conn, import_id)
+    assert list_accounts(conn)[0]["latest_import_at"] is not None
