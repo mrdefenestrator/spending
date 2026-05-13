@@ -1,3 +1,5 @@
+from datetime import date
+
 from flask import Blueprint, current_app, render_template, request
 from sqlalchemy.exc import IntegrityError
 
@@ -15,9 +17,18 @@ _ACCOUNT_SORT_KEYS = {
     "institution": lambda a: (a["institution"] or "").lower(),
     "type": lambda a: (a["account_type"] or "").lower(),
     "created": lambda a: str(a["created_at"] or ""),
+    "latest": lambda a: str(a["latest_txn_date"] or ""),
 }
 
 bp = Blueprint("accounts", __name__)
+
+
+def _enrich_accounts(accts: list) -> list:
+    today = date.today()
+    for a in accts:
+        ltd = a.get("latest_txn_date")
+        a["days_since_latest"] = (today - ltd).days if ltd else None
+    return accts
 
 
 def _sort_accounts(accts: list, sort: str, sort_dir: str) -> list:
@@ -33,6 +44,7 @@ def index():
     engine = current_app.config["engine"]
     with engine.connect() as conn:
         accts = list_accounts(conn)
+    accts = _enrich_accounts(accts)
     accts = _sort_accounts(accts, sort, sort_dir)
     template = (
         "partials/accounts_content.html"

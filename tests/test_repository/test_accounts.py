@@ -1,3 +1,5 @@
+from datetime import date
+
 import pytest
 from sqlalchemy.exc import IntegrityError
 
@@ -8,6 +10,7 @@ from spending.repository.accounts import (
     get_account_by_name,
     list_accounts,
 )
+from spending.repository.imports import create_import, insert_transactions
 
 
 def test_add_and_list_accounts(conn):
@@ -61,3 +64,38 @@ def test_delete_account(conn):
     acct = get_account_by_name(conn, "Chase Visa")
     delete_account(conn, acct["id"])
     assert list_accounts(conn) == []
+
+
+def test_list_accounts_latest_txn_date(conn):
+    acct_id = add_account(
+        conn, name="Chase Visa", institution="Chase", account_type="credit_card"
+    )
+    accts = list_accounts(conn)
+    assert accts[0]["latest_txn_date"] is None
+
+    import_id = create_import(
+        conn, account_id=acct_id, filename="test.ofx", file_hash="abc123"
+    )
+    insert_transactions(
+        conn,
+        import_id=import_id,
+        account_id=acct_id,
+        transactions_data=[
+            {
+                "date": date(2026, 4, 1),
+                "amount": "-10.00",
+                "raw_description": "Coffee",
+                "normalized_merchant": "coffee shop",
+                "fingerprint": "fp1",
+            },
+            {
+                "date": date(2026, 4, 15),
+                "amount": "-20.00",
+                "raw_description": "Gas",
+                "normalized_merchant": "gas station",
+                "fingerprint": "fp2",
+            },
+        ],
+    )
+    accts = list_accounts(conn)
+    assert accts[0]["latest_txn_date"] == date(2026, 4, 15)
