@@ -1,4 +1,6 @@
 import hashlib
+from datetime import date
+from decimal import Decimal
 from pathlib import Path
 
 from sqlalchemy import Connection, delete, func, insert, select, update
@@ -26,11 +28,27 @@ def check_file_hash(conn: Connection, file_hash: str) -> bool:
 
 
 def create_import(
-    conn: Connection, *, account_id: int, filename: str, file_hash: str
+    conn: Connection,
+    *,
+    account_id: int,
+    filename: str,
+    file_hash: str,
+    ledger_balance: Decimal | None = None,
+    ledger_balance_date: date | None = None,
+    available_balance: Decimal | None = None,
+    available_balance_date: date | None = None,
+    beginning_balance: Decimal | None = None,
 ) -> int:
     result = conn.execute(
         insert(imports).values(
-            account_id=account_id, filename=filename, file_hash=file_hash
+            account_id=account_id,
+            filename=filename,
+            file_hash=file_hash,
+            ledger_balance=ledger_balance,
+            ledger_balance_date=ledger_balance_date,
+            available_balance=available_balance,
+            available_balance_date=available_balance_date,
+            beginning_balance=beginning_balance,
         )
     )
     conn.commit()

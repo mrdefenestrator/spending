@@ -9,9 +9,17 @@ class ParsedTransaction(TypedDict):
     raw_description: str
 
 
-class ImportResult(TypedDict):
+class _ImportResultRequired(TypedDict):
     transactions: list[ParsedTransaction]
     account_name: str | None
+
+
+class ImportResult(_ImportResultRequired, total=False):
+    ledger_balance: Decimal | None
+    ledger_balance_date: date | None
+    available_balance: Decimal | None
+    available_balance_date: date | None
+    beginning_balance: Decimal | None
 
 
 class AccountMeta(TypedDict):
