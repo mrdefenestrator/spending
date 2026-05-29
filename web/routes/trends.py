@@ -35,7 +35,7 @@ def root():
 @bp.route("/trends")
 def index():
     today = date.today()
-    period = request.args.get("period", "ytd")
+    period = request.args.get("period", "trailing12")
     start, end = _period_range(period, today)
 
     engine = current_app.config["engine"]
