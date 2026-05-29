@@ -24,11 +24,11 @@ def test_trends_all_period_buttons_visible(page, flask_server):
         assert page.locator(f"a:has-text('{label}')").is_visible(), f"Missing: {label}"
 
 
-def test_trends_ytd_is_active_by_default(page, flask_server):
-    """'Year to Date' button has active (blue) styling on initial load."""
+def test_trends_trailing12_is_active_by_default(page, flask_server):
+    """'Trailing 12 Mo' button has active (blue) styling on initial load."""
     page.goto(f"{flask_server}/trends")
-    ytd_btn = page.locator("a:has-text('Year to Date')")
-    classes = ytd_btn.get_attribute("class")
+    btn = page.locator("a:has-text('Trailing 12 Mo')")
+    classes = btn.get_attribute("class")
     assert "bg-blue-500" in classes
 
 
@@ -36,7 +36,7 @@ def test_trends_inactive_period_buttons_not_highlighted(page, flask_server):
     """Non-active period buttons do not carry the blue active class."""
     page.goto(f"{flask_server}/trends")
     for period, label in _PERIODS:
-        if period == "ytd":
+        if period == "trailing12":
             continue
         btn = page.locator(f"a:has-text('{label}')")
         classes = btn.get_attribute("class") or ""
