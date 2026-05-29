@@ -76,6 +76,11 @@ def run_import(
         account_id=account_id,
         filename=file_path.name,
         file_hash=file_hash,
+        ledger_balance=result.get("ledger_balance"),
+        ledger_balance_date=result.get("ledger_balance_date"),
+        available_balance=result.get("available_balance"),
+        available_balance_date=result.get("available_balance_date"),
+        beginning_balance=result.get("beginning_balance"),
     )
 
     # Build transaction records with fingerprints
