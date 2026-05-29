@@ -38,6 +38,11 @@ imports = Table(
     Column("file_hash", String, nullable=False),
     Column("imported_at", DateTime, default=_utcnow),
     Column("status", String, nullable=False, default="staging"),
+    Column("ledger_balance", Numeric(12, 2), nullable=True),
+    Column("ledger_balance_date", Date, nullable=True),
+    Column("available_balance", Numeric(12, 2), nullable=True),
+    Column("available_balance_date", Date, nullable=True),
+    Column("beginning_balance", Numeric(12, 2), nullable=True),
 )
 
 transactions = Table(

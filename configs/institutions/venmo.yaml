@@ -15,3 +15,5 @@ header_pattern:
   - "Datetime"
   - "Amount (total)"
   - "From"
+beginning_balance_column: "Beginning Balance"
+ending_balance_column: "Ending Balance"

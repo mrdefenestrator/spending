@@ -25,10 +25,15 @@ def parse_ofx(file_path: str | Path) -> ImportResult:
         ofx = OfxParser.parse(f)
 
     transactions: list[ParsedTransaction] = []
+    ledger_balance = None
+    ledger_balance_date = None
+    available_balance = None
+    available_balance_date = None
 
     account = ofx.account
     if account and account.statement:
-        for txn in account.statement.transactions:
+        stmt = account.statement
+        for txn in stmt.transactions:
             transactions.append(
                 ParsedTransaction(
                     date=txn.date.date() if hasattr(txn.date, "date") else txn.date,
@@ -36,8 +41,25 @@ def parse_ofx(file_path: str | Path) -> ImportResult:
                     raw_description=txn.payee or txn.memo or "",
                 )
             )
+        if getattr(stmt, "balance", None) is not None:
+            ledger_balance = Decimal(str(stmt.balance))
+        if getattr(stmt, "balance_date", None) is not None:
+            d = stmt.balance_date
+            ledger_balance_date = d.date() if hasattr(d, "date") else d
+        if getattr(stmt, "available_balance", None) is not None:
+            available_balance = Decimal(str(stmt.available_balance))
+        if getattr(stmt, "available_balance_date", None) is not None:
+            d = stmt.available_balance_date
+            available_balance_date = d.date() if hasattr(d, "date") else d
 
-    return ImportResult(transactions=transactions, account_name=None)
+    return ImportResult(
+        transactions=transactions,
+        account_name=None,
+        ledger_balance=ledger_balance,
+        ledger_balance_date=ledger_balance_date,
+        available_balance=available_balance,
+        available_balance_date=available_balance_date,
+    )
 
 
 def extract_ofx_metadata(file_path: str | Path) -> AccountMeta | None:

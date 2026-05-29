@@ -28,66 +28,94 @@ def parse_csv(file_path: str | Path, config_path: str | Path) -> ImportResult:
     date_fmt = config["date_format"]
     header_row = config.get("header_row", 0)
     amount_format = config.get("amount_format", "standard")
+    beg_bal_col = config.get("beginning_balance_column")
+    end_bal_col = config.get("ending_balance_column")
 
     transactions: list[ParsedTransaction] = []
 
     with open(file_path, newline="") as f:
         for _ in range(header_row):
             f.readline()
-        reader = csv.DictReader(f)
-        for row in reader:
-            raw_amount = row.get(amount_col, "").strip()
-            if not raw_amount:
-                continue
-            try:
-                if amount_format == "signed_dollar":
-                    amount = _parse_signed_dollar(raw_amount)
-                else:
-                    amount = Decimal(raw_amount.replace(",", ""))
-            except (InvalidOperation, ValueError):
-                continue
+        all_rows = list(csv.DictReader(f))
 
-            raw_date = row.get(date_col, "").strip()
-            if not raw_date:
-                continue
-            try:
-                txn_date = datetime.strptime(raw_date, date_fmt).date()
-            except ValueError:
-                continue
-
-            note = row.get(desc_col, "").strip()
-            type_col = config.get("type_column")
-            debit_party_col = config.get("debit_party_column")
-            credit_party_col = config.get("credit_party_column")
-
-            if type_col or debit_party_col or credit_party_col:
-                txn_type = row.get(type_col, "").strip() if type_col else ""
-                party_col = debit_party_col if amount < 0 else credit_party_col
-                party = row.get(party_col, "").strip() if party_col else ""
-                if txn_type and note:
-                    description = f"{txn_type}: {note}"
-                    if party:
-                        description += f" ({party})"
-                elif txn_type:
-                    description = f"{txn_type} ({party})" if party else txn_type
-                elif note:
-                    description = f"{note} ({party})" if party else note
-                else:
-                    description = party
+    for row in all_rows:
+        raw_amount = row.get(amount_col, "").strip()
+        if not raw_amount:
+            continue
+        try:
+            if amount_format == "signed_dollar":
+                amount = _parse_signed_dollar(raw_amount)
             else:
-                description = note
+                amount = Decimal(raw_amount.replace(",", ""))
+        except (InvalidOperation, ValueError):
+            continue
 
-            transactions.append(
-                ParsedTransaction(
-                    date=txn_date,
-                    amount=amount,
-                    raw_description=description,
-                )
+        raw_date = row.get(date_col, "").strip()
+        if not raw_date:
+            continue
+        try:
+            txn_date = datetime.strptime(raw_date, date_fmt).date()
+        except ValueError:
+            continue
+
+        note = row.get(desc_col, "").strip()
+        type_col = config.get("type_column")
+        debit_party_col = config.get("debit_party_column")
+        credit_party_col = config.get("credit_party_column")
+
+        if type_col or debit_party_col or credit_party_col:
+            txn_type = row.get(type_col, "").strip() if type_col else ""
+            party_col = debit_party_col if amount < 0 else credit_party_col
+            party = row.get(party_col, "").strip() if party_col else ""
+            if txn_type and note:
+                description = f"{txn_type}: {note}"
+                if party:
+                    description += f" ({party})"
+            elif txn_type:
+                description = f"{txn_type} ({party})" if party else txn_type
+            elif note:
+                description = f"{note} ({party})" if party else note
+            else:
+                description = party
+        else:
+            description = note
+
+        transactions.append(
+            ParsedTransaction(
+                date=txn_date,
+                amount=amount,
+                raw_description=description,
             )
+        )
+
+    beginning_balance = None
+    ledger_balance = None
+
+    if beg_bal_col:
+        for row in all_rows:
+            raw = row.get(beg_bal_col, "").strip()
+            if raw:
+                try:
+                    beginning_balance = _parse_signed_dollar(raw)
+                except (InvalidOperation, ValueError):
+                    pass
+                break
+
+    if end_bal_col:
+        for row in all_rows:
+            raw = row.get(end_bal_col, "").strip()
+            if raw:
+                try:
+                    ledger_balance = _parse_signed_dollar(raw)
+                except (InvalidOperation, ValueError):
+                    pass
+                break
 
     return ImportResult(
         transactions=transactions,
         account_name=config.get("account_name"),
+        beginning_balance=beginning_balance,
+        ledger_balance=ledger_balance,
     )
 
 
