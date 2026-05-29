@@ -76,6 +76,78 @@ def sample_ofx_with_meta(tmp_path):
 
 
 @pytest.fixture
+def sample_ofx_with_balances(tmp_path):
+    content = """<?xml version="1.0" encoding="UTF-8"?>
+<?OFX OFXHEADER="200" VERSION="220"?>
+<OFX>
+  <BANKMSGSRSV1>
+    <STMTTRNRS>
+      <STMTRS>
+        <CURDEF>USD</CURDEF>
+        <BANKACCTFROM>
+          <BANKID>021000021</BANKID>
+          <ACCTID>9876543210</ACCTID>
+          <ACCTTYPE>CHECKING</ACCTTYPE>
+        </BANKACCTFROM>
+        <BANKTRANLIST>
+          <DTSTART>20260101</DTSTART>
+          <DTEND>20260131</DTEND>
+          <STMTTRN>
+            <TRNTYPE>DEBIT</TRNTYPE>
+            <DTPOSTED>20260115120000</DTPOSTED>
+            <TRNAMT>-42.50</TRNAMT>
+            <FITID>20260115001</FITID>
+            <NAME>WHOLE FOODS</NAME>
+          </STMTTRN>
+        </BANKTRANLIST>
+        <LEDGERBAL>
+          <BALAMT>1234.56</BALAMT>
+          <DTASOF>20260131120000</DTASOF>
+        </LEDGERBAL>
+        <AVAILBAL>
+          <BALAMT>1184.56</BALAMT>
+          <DTASOF>20260131120000</DTASOF>
+        </AVAILBAL>
+      </STMTRS>
+    </STMTTRNRS>
+  </BANKMSGSRSV1>
+</OFX>"""
+    path = tmp_path / "test_balances.ofx"
+    path.write_text(content)
+    return path
+
+
+@pytest.fixture
+def sample_ofx_no_balances(tmp_path):
+    content = """<?xml version="1.0" encoding="UTF-8"?>
+<?OFX OFXHEADER="200" VERSION="220"?>
+<OFX>
+  <BANKMSGSRSV1>
+    <STMTTRNRS>
+      <STMTRS>
+        <BANKACCTFROM>
+          <ACCTID>1111</ACCTID>
+          <ACCTTYPE>CHECKING</ACCTTYPE>
+        </BANKACCTFROM>
+        <BANKTRANLIST>
+          <STMTTRN>
+            <TRNTYPE>DEBIT</TRNTYPE>
+            <DTPOSTED>20260115120000</DTPOSTED>
+            <TRNAMT>-10.00</TRNAMT>
+            <FITID>001</FITID>
+            <NAME>COFFEE</NAME>
+          </STMTTRN>
+        </BANKTRANLIST>
+      </STMTRS>
+    </STMTTRNRS>
+  </BANKMSGSRSV1>
+</OFX>"""
+    path = tmp_path / "test_no_balances.ofx"
+    path.write_text(content)
+    return path
+
+
+@pytest.fixture
 def sample_venmo_csv(tmp_path):
     content = (
         "Account Statement - (@Test-User) ,,,,,,,,,,,,,,,,,,,,,\n"

@@ -48,6 +48,32 @@ def test_extract_ofx_metadata_suggested_name(sample_ofx_with_meta):
     assert "Chase" in meta["suggested_name"]
 
 
+def test_parse_ofx_ledger_balance(sample_ofx_with_balances):
+    result = parse_ofx(sample_ofx_with_balances)
+    assert result.get("ledger_balance") == Decimal("1234.56")
+
+
+def test_parse_ofx_ledger_balance_date(sample_ofx_with_balances):
+    result = parse_ofx(sample_ofx_with_balances)
+    assert result.get("ledger_balance_date") == date(2026, 1, 31)
+
+
+def test_parse_ofx_available_balance(sample_ofx_with_balances):
+    result = parse_ofx(sample_ofx_with_balances)
+    assert result.get("available_balance") == Decimal("1184.56")
+
+
+def test_parse_ofx_available_balance_date(sample_ofx_with_balances):
+    result = parse_ofx(sample_ofx_with_balances)
+    assert result.get("available_balance_date") == date(2026, 1, 31)
+
+
+def test_parse_ofx_no_balances_returns_none(sample_ofx_no_balances):
+    result = parse_ofx(sample_ofx_no_balances)
+    assert result.get("ledger_balance") is None
+    assert result.get("available_balance") is None
+
+
 def test_extract_ofx_metadata_corrupt_file(tmp_path):
     bad = tmp_path / "bad.ofx"
     bad.write_text("not valid ofx content at all")
