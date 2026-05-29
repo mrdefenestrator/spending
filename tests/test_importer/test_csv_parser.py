@@ -163,6 +163,62 @@ header_pattern:
     assert "Venmo" in open(detected).read()
 
 
+_VENMO_CONFIG_WITH_BALANCES = """
+name: Venmo
+institution: Venmo
+header_row: 2
+date_column: "Datetime"
+date_format: "%Y-%m-%dT%H:%M:%S"
+amount_column: "Amount (total)"
+amount_format: signed_dollar
+description_column: "Note"
+type_column: "Type"
+debit_party_column: "To"
+credit_party_column: "From"
+account_name: null
+header_pattern:
+  - "ID"
+  - "Datetime"
+  - "Amount (total)"
+  - "From"
+beginning_balance_column: "Beginning Balance"
+ending_balance_column: "Ending Balance"
+"""
+
+
+def test_parse_csv_venmo_beginning_balance(sample_venmo_csv, tmp_path):
+    config_path = tmp_path / "venmo_bal.yaml"
+    config_path.write_text(_VENMO_CONFIG_WITH_BALANCES)
+    result = parse_csv(sample_venmo_csv, str(config_path))
+    assert result.get("beginning_balance") == Decimal("0.00")
+
+
+def test_parse_csv_venmo_ending_balance(sample_venmo_csv, tmp_path):
+    config_path = tmp_path / "venmo_bal.yaml"
+    config_path.write_text(_VENMO_CONFIG_WITH_BALANCES)
+    result = parse_csv(sample_venmo_csv, str(config_path))
+    assert result.get("ledger_balance") == Decimal("0.00")
+
+
+def test_parse_csv_no_balance_columns_returns_none(sample_csv, tmp_path):
+    config_path = tmp_path / "no_bal.yaml"
+    config_path.write_text(
+        """
+name: Test Bank
+institution: Test
+date_column: "Transaction Date"
+amount_column: "Amount"
+description_column: "Description"
+date_format: "%m/%d/%Y"
+account_name: null
+header_pattern: []
+"""
+    )
+    result = parse_csv(sample_csv, str(config_path))
+    assert result.get("beginning_balance") is None
+    assert result.get("ledger_balance") is None
+
+
 def test_detect_institution_config_no_match(sample_csv, tmp_path):
     config_dir = tmp_path / "institutions"
     config_dir.mkdir()
